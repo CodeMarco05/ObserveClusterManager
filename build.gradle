@@ -16,6 +16,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-rest-jsonb'
     implementation 'io.quarkus:quarkus-rest-jackson'
     testImplementation 'io.quarkus:quarkus-junit5'
+    implementation 'io.quarkus:quarkus-mongodb-panache'
 }
 
 group 'com.observe.os1'
