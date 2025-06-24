@@ -1,6 +1,17 @@
-greeting:
-  message: "hello"
 quarkus:
-  mongodb:
-    connection-string: mongodb://localhost:27017
-    database: myapp
+  datasource:
+    db-kind: postgresql
+    username: observer
+    password: theOverlookingEagle
+    jdbc:
+      url: jdbc:postgresql://localhost:5432/mydb
+
+  hibernate-orm:
+    dialect: org.hibernate.dialect.PostgreSQLDialect
+    log:
+      sql: true
+    scripts:
+      generation:
+        create: true
+        drop: never
+        update: true

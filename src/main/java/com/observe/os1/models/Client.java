@@ -1,10 +1,17 @@
 package com.observe.os1.models;
 
-import io.quarkus.mongodb.panache.PanacheMongoEntity;
-import io.quarkus.mongodb.panache.common.MongoEntity;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
-@MongoEntity(collection = "clients")
-public class Client extends PanacheMongoEntity {
+@Entity
+@Table(name = "clients")
+public class Client extends PanacheEntity {
+
+    @Column(nullable = false)
     public String name;
+
+    @Column(name = "api_key", nullable = false, unique = true)
     public String apiKey;
 }

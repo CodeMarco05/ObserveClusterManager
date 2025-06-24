@@ -60,6 +60,6 @@ Thumbs.db
 *.sqlite
 
 # === Environment secrets ===
-.env
+dev.env
 .env.*
 application-local.properties
