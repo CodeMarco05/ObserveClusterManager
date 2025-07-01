@@ -1,7 +1,6 @@
 package com.observe.os1;
 
-import com.observe.os1.models.Client;
-import jakarta.inject.Inject;
+import com.observe.os1.models.ClientModel;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -16,13 +15,13 @@ public class UserResource {
 
 
     @GET
-    public List<Client> getAllUsers() {
-        return Client.listAll();
+    public List<ClientModel> getAllUsers() {
+        return ClientModel.listAll();
     }
 
     @POST
     @Transactional
-    public Response createUser(Client user) {
+    public Response createUser(ClientModel user) {
         user.persist();
         return Response.status(Response.Status.CREATED).entity(user).build();
     }
@@ -30,18 +29,18 @@ public class UserResource {
     @GET
     @Path("/{id}")
     public Response getUser(@PathParam("id") Long id) {
-        Client client = Client.findById(id);
-        if (client == null) {
+        ClientModel clientModel = ClientModel.findById(id);
+        if (clientModel == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.ok(client).build();
+        return Response.ok(clientModel).build();
     }
 
     @DELETE
     @Path("/{id}")
     @Transactional
     public Response deleteUser(@PathParam("id") Long id) {
-        boolean deleted = Client.deleteById(id);
+        boolean deleted = ClientModel.deleteById(id);
         return deleted ? Response.noContent().build() : Response.status(Response.Status.NOT_FOUND).build();
     }
 }
