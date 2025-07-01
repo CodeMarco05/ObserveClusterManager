@@ -12,5 +12,5 @@ quarkus:
     jdbc:
       url: jdbc:postgresql://localhost:5432/mydb
 
-myconfig:
+my-config:
   config-location: ${config-location:file:config/system-config.yml}
