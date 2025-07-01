@@ -1,11 +1,4 @@
 quarkus:
-  datasource:
-    db-kind: postgresql
-    username: observer
-    password: theOverlookingEagle
-    jdbc:
-      url: jdbc:postgresql://localhost:5432/mydb
-
   hibernate-orm:
     dialect: org.hibernate.dialect.PostgreSQLDialect
     log:
@@ -15,3 +8,15 @@ quarkus:
         create: true
         drop: never
         update: true
+
+  datasource:
+    db-kind: postgresql
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    jdbc:
+      url: ${DB_URL}
+
+"%dev":
+  quarkus:
+    config:
+      locations: dotenv
