@@ -19,6 +19,11 @@ dependencies {
     implementation 'io.quarkus:quarkus-jdbc-postgresql'
     testImplementation 'io.quarkus:quarkus-junit5'
     implementation 'io.github.cdimascio:dotenv-java:2.2.0'
+
+    // Tests
+    testImplementation 'io.quarkus:quarkus-junit5'
+    testImplementation 'io.rest-assured:rest-assured'
+    testImplementation 'org.mockito:mockito-core:5.12.0' // optional
 }
 
 group 'com.observe.os1'
@@ -30,6 +35,13 @@ java {
 }
 
 test {
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        exceptionFormat "full"
+        showCauses true
+        showExceptions true
+        showStackTraces true
+    }
     systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
 }
 compileJava {

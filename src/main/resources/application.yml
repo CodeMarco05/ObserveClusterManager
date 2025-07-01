@@ -1,22 +1,16 @@
 quarkus:
   hibernate-orm:
-    dialect: org.hibernate.dialect.PostgreSQLDialect
+    schema-management:
+      strategy: drop-and-create
     log:
       sql: true
-    scripts:
-      generation:
-        create: true
-        drop: never
-        update: true
 
   datasource:
     db-kind: postgresql
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    username: observer
+    password: theOverlookingEagle
     jdbc:
-      url: ${DB_URL}
+      url: jdbc:postgresql://localhost:5432/mydb
 
-"%dev":
-  quarkus:
-    config:
-      locations: dotenv
+myconfig:
+  config-location: ${config-location:file:config/system-config.yml}
