@@ -1,4 +1,4 @@
-package com.observe.os1.v1.newconnection;
+package com.observe.os1.v1.newConnection;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -29,11 +29,12 @@ public class NewConnectionTest {
                 .header("X-Forwarded-For", "8.8.8.8")  // simulate external IP
                 .contentType(ContentType.JSON)
                 .body("{}")
+                .log().all()
                 .when()
                 .post("/v1/new-connection")
                 .then()
                 .statusCode(Response.Status.FORBIDDEN.getStatusCode())
-                .body(Matchers.equalTo("Zugriff verweigert: Nur lokale Verbindungen sind erlaubt."));
+                .body(Matchers.equalTo("Access denied. Just for local access."));
     }
 
 }

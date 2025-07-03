@@ -1,4 +1,4 @@
-package com.observe.os1.v1.newconnection;
+package com.observe.os1.utils;
 
 public class TmpPasswordGenerator {
 

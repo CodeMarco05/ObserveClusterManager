@@ -1,6 +1,7 @@
-package com.observe.os1.v1.newconnection;
+package com.observe.os1.v1.newConnection;
 
-import com.observe.os1.models.NewConnectionModel;
+import com.observe.os1.models.TmpClientModel;
+import com.observe.os1.utils.TmpPasswordGenerator;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -15,8 +16,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-
-import javax.print.attribute.standard.Media;
 
 @Path("/v1/new-connection")
 public class NewConnection {
@@ -33,11 +32,11 @@ public class NewConnection {
     )
     @Operation(
             summary = "Create a new temporary connection password",
-            description = "Only callable from localhost. Generates a new temporary password for a connection and saves it in the database with a timestamp."
+            description = "Only callable from localhost. Generates a new temporary password for a new connection. Then you can login with the returned temporary key."
     )
     @APIResponse(
             responseCode = "200",
-            description = "Erfolgreiche Erstellung",
+            description = "Success: Returns the new temporary password.",
             content = @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = String.class),
@@ -46,13 +45,13 @@ public class NewConnection {
     )
     @APIResponse(
             responseCode = "403",
-            description = "Nicht erlaubt: nur localhost",
-            content = @Content(schema = @Schema(type = SchemaType.STRING), example = "\"Zugriff verweigert: Nur lokale Verbindungen sind erlaubt.\"")
+            description = "Not allowed: Only local connections are permitted.",
+            content = @Content(schema = @Schema(type = SchemaType.STRING), example = "\"Access denied. Just for local access.\"")
     )
     @APIResponse(
             responseCode = "500",
-            description = "Interner Serverfehler",
-            content = @Content(schema = @Schema(type = SchemaType.STRING), example = "\"Fehler beim Speichern der Verbindung: ...\"")
+            description = "Internal Server Error: An error occurred while saving the connection.",
+            content = @Content(schema = @Schema(type = SchemaType.STRING), example = "\"Error during saving of temporary password: ...\"")
     )
     public Response createNewTemporaryConnection(@Context ContainerRequestContext request) {
 
@@ -64,29 +63,24 @@ public class NewConnection {
 
         if (!isLocal(remoteAddress)) {
             return Response.status(Response.Status.FORBIDDEN)
-                    .entity("Zugriff verweigert: Nur lokale Verbindungen sind erlaubt.")
+                    .entity("Access denied. Just for local access.")
                     .build();
         }
 
-        // build new temporary password
-        String tmpPassword = TmpPasswordGenerator.genPassword(4, 3);
-
         //save the temporary password in the database with the timestamp
-        NewConnectionModel newConnectionModel = new NewConnectionModel();
-        newConnectionModel.setTimestamp(new java.sql.Timestamp(System.currentTimeMillis()));
-        newConnectionModel.setTemporaryPassword(tmpPassword);
+        TmpClientModel tmpClientModel = new TmpClientModel();
 
         //save the new connection model
         try {
-            newConnectionModel.persist();
+            tmpClientModel.persist();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Fehler beim Speichern der Verbindung: " + e.getMessage())
+                    .entity("Error during saving of temporary password: " + e.getMessage())
                     .build();
         }
 
         // return the temporary password as json response
-        return  Response.ok(newConnectionModel).build();
+        return  Response.ok(tmpClientModel).build();
     }
 
     private boolean isLocal(String ip) {

@@ -7,13 +7,13 @@ quarkus:
 
   datasource:
     db-kind: postgresql
-    username: observer
-    password: theOverlookingEagle
+    username: test_observer
+    password: test_password
     jdbc:
-      url: jdbc:postgresql://localhost:5432/mydb
+      url: jdbc:postgresql://localhost:5432/testdb
     devservices:
       enabled: true
       show-logs: true
 
 my-config:
-  config-location: ${config-location:file:config/system-config.yml}
+  config-location: ${config-location:file:config/system-config-test.yml}
