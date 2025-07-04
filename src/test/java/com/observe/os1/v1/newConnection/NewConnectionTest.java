@@ -2,7 +2,6 @@ package com.observe.os1.v1.newConnection;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.Response;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;

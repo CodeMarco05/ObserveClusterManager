@@ -1,7 +1,6 @@
 package com.observe.os1.models;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
 import java.sql.Time;
@@ -10,7 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "system_info")
 
-public class SystemInfo extends PanacheEntity {
+public class SystemInfoModel extends PanacheEntity {
 
     @Column(nullable = false)
     public LocalDateTime startDateTime = LocalDateTime.now();

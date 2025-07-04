@@ -1,20 +1,17 @@
 package com.observe.os1.systemDataControllers;
 
-import com.observe.os1.models.SystemInfo;
+import com.observe.os1.models.SystemInfoModel;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
-public class SystemInfoControllerTest {
+public class SystemInfoModelControllerTest {
 
     @Inject
     SystemInfoController controller;
@@ -22,7 +19,7 @@ public class SystemInfoControllerTest {
     @BeforeEach
     @Transactional
     public void clearDb() {
-        SystemInfo.deleteAll();
+        SystemInfoModel.deleteAll();
     }
 
 
@@ -32,7 +29,7 @@ public class SystemInfoControllerTest {
     public void testSystemInfoEntryExists() {
         controller.onStartup(null); // simulate startup event
 
-        SystemInfo infoObj = SystemInfo.findAll().firstResult();
+        SystemInfoModel infoObj = SystemInfoModel.findAll().firstResult();
 
         assertNotNull(infoObj, "SystemInfo should have been created on startup");
         assertNotNull(infoObj.startDateTime, "Start time should be set");
@@ -49,7 +46,7 @@ public class SystemInfoControllerTest {
         controller.onStartup(null); // simulate second startup
         controller.onStartup(null); // simulate third startup
 
-        long count = SystemInfo.count();
+        long count = SystemInfoModel.count();
         assertEquals(3, count, "Should have 3 startup records");
     }
 }
