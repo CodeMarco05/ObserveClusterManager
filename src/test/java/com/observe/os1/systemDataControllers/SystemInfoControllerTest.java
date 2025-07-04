@@ -35,9 +35,9 @@ public class SystemInfoControllerTest {
         SystemInfo infoObj = SystemInfo.findAll().firstResult();
 
         assertNotNull(infoObj, "SystemInfo should have been created on startup");
-        assertNotNull(infoObj.startTime, "Start time should be set");
+        assertNotNull(infoObj.startDateTime, "Start time should be set");
 
-        // temporary user should be created on first startup
+        // TODO temporary user should be created on first startup
 
     }
 

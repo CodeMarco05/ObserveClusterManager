@@ -1,7 +1,9 @@
 package com.observe.os1.v1.newConnection;
 
+import com.observe.os1.filters.LocalOnly;
 import com.observe.os1.models.TmpClientModel;
 import com.observe.os1.utils.TmpPasswordGenerator;
+import io.quarkus.logging.Log;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -21,14 +23,11 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 public class NewConnection {
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     @Transactional
+    @LocalOnly
     @RequestBody(
-            required = false,
-            content = @Content(
-                    mediaType = "application/json",
-                    example = "{}"
-            )
+            required = false
     )
     @Operation(
             summary = "Create a new temporary connection password",
@@ -38,7 +37,7 @@ public class NewConnection {
             responseCode = "200",
             description = "Success: Returns the new temporary password.",
             content = @Content(
-                    mediaType = "application/json",
+                    mediaType = "text/plain",
                     schema = @Schema(implementation = String.class),
                     example = "\"abC1-xyZ7\""
             )
@@ -53,20 +52,7 @@ public class NewConnection {
             description = "Internal Server Error: An error occurred while saving the connection.",
             content = @Content(schema = @Schema(type = SchemaType.STRING), example = "\"Error during saving of temporary password: ...\"")
     )
-    public Response createNewTemporaryConnection(@Context ContainerRequestContext request) {
-
-        //filter if request comes from localhost
-        String remoteAddress = request.getHeaderString("X-Forwarded-For");
-        if (remoteAddress == null){
-            remoteAddress = request.getUriInfo().getRequestUri().getHost();
-        }
-
-        if (!isLocal(remoteAddress)) {
-            return Response.status(Response.Status.FORBIDDEN)
-                    .entity("Access denied. Just for local access.")
-                    .build();
-        }
-
+    public Response createNewTemporaryConnection() {
         //save the temporary password in the database with the timestamp
         TmpClientModel tmpClientModel = new TmpClientModel();
 
@@ -76,11 +62,14 @@ public class NewConnection {
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Error during saving of temporary password: " + e.getMessage())
+                    .type(MediaType.TEXT_PLAIN_TYPE)
                     .build();
         }
 
         // return the temporary password as json response
-        return  Response.ok(tmpClientModel).build();
+        return Response.ok(tmpClientModel.getTemporaryPassword())
+                .type(MediaType.TEXT_PLAIN_TYPE)
+                .build();
     }
 
     private boolean isLocal(String ip) {

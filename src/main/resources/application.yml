@@ -1,4 +1,6 @@
 quarkus:
+  log:
+    level: INFO
   hibernate-orm:
     schema-management:
       strategy: drop-and-create
@@ -10,7 +12,7 @@ quarkus:
     username: observer
     password: theOverlookingEagle
     jdbc:
-      url: jdbc:postgresql://localhost:5432/mydb
+      url: jdbc:postgresql://localhost:5432/observe_db
     devservices:
       enabled: true
       show-logs: true

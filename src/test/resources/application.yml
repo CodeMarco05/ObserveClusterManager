@@ -7,10 +7,10 @@ quarkus:
 
   datasource:
     db-kind: postgresql
-    username: test_observer
-    password: test_password
+    username: observer_test
+    password: theOverlookingEagle_test
     jdbc:
-      url: jdbc:postgresql://localhost:5432/testdb
+      url: jdbc:postgresql://localhost:5432/observe_db_test
     devservices:
       enabled: true
       show-logs: true

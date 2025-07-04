@@ -5,11 +5,14 @@ services:
     container_name: quarkus-postgres
     restart: always
     environment:
-      POSTGRES_DB: mydb
-      POSTGRES_USER: observer
-      POSTGRES_PASSWORD: theOverlookingEagle
+      POSTGRES_PASSWORD: rootpw
     ports:
       - "5432:5432"
+    volumes:
+      # Init scripts
+      - ./db-init-scripts:/docker-entrypoint-initdb.d:ro
+      # Persistent data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - quarkus-net
 
@@ -31,6 +34,10 @@ services:
     #   - ./config/system-config.yaml:/deployments/config/system-config.yaml:ro
     networks:
       - quarkus-net
+
+volumes:
+  postgres_data:
+    driver: local
 
 networks:
   quarkus-net:

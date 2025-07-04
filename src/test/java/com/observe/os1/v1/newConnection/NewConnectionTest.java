@@ -7,6 +7,8 @@ import jakarta.ws.rs.core.Response;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.Matchers.matchesRegex;
+
 @QuarkusTest
 public class NewConnectionTest {
 
@@ -14,22 +16,17 @@ public class NewConnectionTest {
     public void testSuccessfulRequestFromLocalhost() {
         RestAssured.given()
                 .header("X-Forwarded-For", "127.0.0.1")  // simulate local request
-                .contentType(ContentType.JSON)
-                .body("{}")
                 .when()
                 .post("/v1/new-connection")
                 .then()
                 .statusCode(Response.Status.OK.getStatusCode())
-                .body("temporaryPassword", Matchers.notNullValue());
+                .body(matchesRegex("^[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}$"));
     }
 
     @Test
     public void testRequestFromUnknownSourceIsForbidden() {
         RestAssured.given()
                 .header("X-Forwarded-For", "8.8.8.8")  // simulate external IP
-                .contentType(ContentType.JSON)
-                .body("{}")
-                .log().all()
                 .when()
                 .post("/v1/new-connection")
                 .then()
