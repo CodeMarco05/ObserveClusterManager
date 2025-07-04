@@ -12,10 +12,11 @@ import static org.hamcrest.Matchers.matchesRegex;
 @QuarkusTest
 public class NewConnectionTest {
 
+    // TODO adopt the tests so they use an admin API key
     @Test
     public void testSuccessfulRequestFromLocalhost() {
         RestAssured.given()
-                .header("X-Forwarded-For", "127.0.0.1")  // simulate local request
+                .header("X-Forwarded-For", "127.0.0.1")
                 .when()
                 .post("/v1/new-connection")
                 .then()
@@ -26,7 +27,7 @@ public class NewConnectionTest {
     @Test
     public void testRequestFromUnknownSourceIsForbidden() {
         RestAssured.given()
-                .header("X-Forwarded-For", "8.8.8.8")  // simulate external IP
+                .header("X-Forwarded-For", "8.8.8.8")
                 .when()
                 .post("/v1/new-connection")
                 .then()
