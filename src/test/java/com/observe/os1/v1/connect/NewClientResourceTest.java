@@ -1,4 +1,4 @@
-package com.observe.os1.v1.newConnection;
+package com.observe.os1.v1.connect;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.Matchers.matchesRegex;
 
 @QuarkusTest
-public class NewConnectionTest {
+public class NewClientResourceTest {
 
     // TODO adopt the tests so they use an admin API key
     @Test

@@ -19,6 +19,13 @@ dependencies {
     implementation 'io.quarkus:quarkus-jdbc-postgresql'
     implementation 'io.github.cdimascio:dotenv-java:2.2.0'
 
+    // key generation
+    implementation 'io.quarkus:quarkus-smallrye-jwt'
+    implementation 'io.smallrye:smallrye-jwt-build'
+
+    // password hasing
+    implementation 'org.mindrot:jbcrypt:0.4'
+
     // Tests
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
