@@ -1,6 +1,6 @@
 package com.observe.os1.v1.connect;
 
-import com.observe.os1.auth.UserService;
+import com.observe.os1.auth.ClientService;
 import com.observe.os1.models.ClientModel;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -15,7 +15,7 @@ import jakarta.ws.rs.core.Response;
 public class NewClientResource {
 
     @Inject
-    UserService userService;
+    ClientService clientService;
 
     public static class ClientRequest {
         public String name;
@@ -38,7 +38,7 @@ public class NewClientResource {
 
         //check if the client already exists
         try {
-            ClientModel clientModel = userService.registerClient(newClient.name, newClient.password, newClient.roles);
+            ClientModel clientModel = clientService.registerClient(newClient.name, newClient.password, newClient.roles);
 
             ClientRequest response = new ClientRequest();
             response.name = clientModel.name;

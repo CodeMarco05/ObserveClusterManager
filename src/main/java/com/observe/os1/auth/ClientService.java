@@ -7,7 +7,7 @@ import jakarta.transaction.Transactional;
 import org.mindrot.jbcrypt.BCrypt;
 
 @ApplicationScoped
-public class UserService {
+public class ClientService {
 
     @Transactional
     public ClientModel registerClient(String name, String plainPassword, String roles){

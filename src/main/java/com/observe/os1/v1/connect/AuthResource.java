@@ -1,7 +1,7 @@
 package com.observe.os1.v1.connect;
 
 import com.observe.os1.auth.JwtTokenGenerator;
-import com.observe.os1.auth.UserService;
+import com.observe.os1.auth.ClientService;
 import com.observe.os1.models.ClientModel;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -15,7 +15,7 @@ import jakarta.ws.rs.core.Response;
 public class AuthResource {
 
     @Inject
-    UserService userService;
+    ClientService clientService;
 
     @Inject
     JwtTokenGenerator jwtTokenGenerator;
@@ -30,7 +30,7 @@ public class AuthResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response login(LoginRequest loginRequest) {
-        ClientModel client = userService.authenticate(loginRequest.name, loginRequest.password);
+        ClientModel client = clientService.authenticate(loginRequest.name, loginRequest.password);
 
         // Check if the client arguments given are valid for a user
         if (client == null) {
