@@ -10,8 +10,8 @@ import org.mindrot.jbcrypt.BCrypt;
 public class ClientService {
 
     @Transactional
-    public ClientModel registerClient(String name, String plainPassword, String roles){
-        if (name == null || plainPassword == null || roles == null) {
+    public ClientModel registerClient(String name, String passwordHash, String roles){
+        if (name == null || passwordHash == null || roles == null) {
             throw new IllegalArgumentException("Name, password, and roles cannot be null");
         }
 
@@ -26,7 +26,7 @@ public class ClientService {
 
         ClientModel client = new ClientModel();
         client.name = name;
-        client.passwordHash = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
+        client.passwordHash = passwordHash;
         client.roles = roles;
         client.persistAndFlush();
 
