@@ -1,0 +1,28 @@
+name: Quarkus ci
+
+on:
+  push:
+    branches: [ "**" ]        # Run on any branch
+  pull_request:
+    branches: [ "**" ]        # For any PR
+  workflow_dispatch:          # Allow manual trigger
+
+jobs:
+  test:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Run Quarkus tests
+        run: ./gradlew clean build

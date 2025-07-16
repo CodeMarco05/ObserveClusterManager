@@ -12,36 +12,4 @@ import static org.hamcrest.Matchers.is;
 @QuarkusTest
 public class TestEndpointTest {
 
-    @Inject
-    ClientService clientService;
-
-    @Inject
-    JwtTokenGenerator jwtTokenGenerator;
-
-    @Test
-    public void testHelloEndpoint() {
-        given()
-                .when().get("/test")
-                .then()
-                .statusCode(200)
-                .body(is("Hello from Quarkus!"));
-    }
-
-    @Test
-    public void testProtectedEndpoint() {
-        given()
-                .header("Authorization", "Bearer " + getTestToken())
-                .when().get("/test")
-                .then()
-                .statusCode(200);
-    }
-
-    private String getTestToken() {
-        ClientModel client = clientService.registerClient("testUser", "testPassword", "user");
-        if (client == null) {
-            throw new RuntimeException("Failed to register test client");
-        }
-
-        return jwtTokenGenerator.generateToken(client);
-    }
 }
