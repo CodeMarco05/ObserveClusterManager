@@ -15,7 +15,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - quarkus-net
-      -
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
