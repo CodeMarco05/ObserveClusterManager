@@ -1,0 +1,191 @@
+---
+- name: Node Exporter Management
+  hosts: localhost
+  become: yes
+  vars:
+    node_exporter_version: "1.8.2"
+    node_exporter_user: "node_exporter"
+    node_exporter_group: "node_exporter"
+    node_exporter_binary_path: "/usr/local/bin/node_exporter"
+    node_exporter_config_dir: "/etc/node_exporter"
+    node_exporter_data_dir: "/var/lib/node_exporter"
+    node_exporter_port: 9100
+    node_exporter_download_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+
+    # Action variable - set this when running the playbook
+    # Options: install, start, stop, restart, uninstall
+    action: "install"
+
+  tasks:
+    - name: Install Node Exporter
+      block:
+        - name: Create node_exporter group
+          group:
+            name: "{{ node_exporter_group }}"
+            system: yes
+
+        - name: Create node_exporter user
+          user:
+            name: "{{ node_exporter_user }}"
+            group: "{{ node_exporter_group }}"
+            system: yes
+            shell: /bin/false
+            home: "{{ node_exporter_data_dir }}"
+            createhome: no
+
+        - name: Create directories
+          file:
+            path: "{{ item }}"
+            state: directory
+            owner: "{{ node_exporter_user }}"
+            group: "{{ node_exporter_group }}"
+            mode: '0755'
+          loop:
+            - "{{ node_exporter_config_dir }}"
+            - "{{ node_exporter_data_dir }}"
+
+        - name: Download and extract Node Exporter
+          unarchive:
+            src: "{{ node_exporter_download_url }}"
+            dest: /tmp
+            remote_src: yes
+            creates: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64"
+
+        - name: Copy Node Exporter binary
+          copy:
+            src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+            dest: "{{ node_exporter_binary_path }}"
+            owner: root
+            group: root
+            mode: '0755'
+            remote_src: yes
+
+        - name: Create systemd service file
+          copy:
+            dest: /etc/systemd/system/node_exporter.service
+            owner: root
+            group: root
+            mode: '0644'
+            content: |
+              [Unit]
+              Description=Node Exporter
+              Wants=network-online.target
+              After=network-online.target
+
+              [Service]
+              User={{ node_exporter_user }}
+              Group={{ node_exporter_group }}
+              Type=simple
+              ExecStart={{ node_exporter_binary_path }} \
+                  --web.listen-address=:{{ node_exporter_port }} \
+                  --path.procfs=/proc \
+                  --path.sysfs=/sys \
+                  --collector.filesystem.mount-points-exclude="^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($|/)" \
+                  --collector.netclass.ignored-devices="^(veth.*)$" \
+                  --collector.netdev.device-exclude="^(veth.*)$"
+
+              SyslogIdentifier=node_exporter
+              Restart=always
+              RestartSec=1
+              StartLimitInterval=0
+
+              [Install]
+              WantedBy=multi-user.target
+          notify:
+            - reload systemd
+            - start node_exporter
+
+        - name: Clean up temporary files
+          file:
+            path: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64"
+            state: absent
+
+      when: action == "install"
+
+    - name: Start Node Exporter
+      systemd:
+        name: node_exporter
+        state: started
+        enabled: yes
+        daemon_reload: yes
+      when: action == "start"
+
+    - name: Stop Node Exporter
+      systemd:
+        name: node_exporter
+        state: stopped
+      when: action == "stop"
+
+    - name: Restart Node Exporter
+      systemd:
+        name: node_exporter
+        state: restarted
+        daemon_reload: yes
+      when: action == "restart"
+
+    - name: Uninstall Node Exporter
+      block:
+        - name: Stop and disable Node Exporter service
+          systemd:
+            name: node_exporter
+            state: stopped
+            enabled: no
+            daemon_reload: yes
+          ignore_errors: yes
+
+        - name: Remove systemd service file
+          file:
+            path: /etc/systemd/system/node_exporter.service
+            state: absent
+
+        - name: Remove Node Exporter binary
+          file:
+            path: "{{ node_exporter_binary_path }}"
+            state: absent
+
+        - name: Remove Node Exporter directories
+          file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - "{{ node_exporter_config_dir }}"
+            - "{{ node_exporter_data_dir }}"
+
+        - name: Remove node_exporter user
+          user:
+            name: "{{ node_exporter_user }}"
+            state: absent
+            remove: yes
+
+        - name: Remove node_exporter group
+          group:
+            name: "{{ node_exporter_group }}"
+            state: absent
+
+        - name: Reload systemd
+          systemd:
+            daemon_reload: yes
+
+      when: action == "uninstall"
+
+    - name: Display Node Exporter status
+      systemd:
+        name: node_exporter
+      register: service_status
+      when: action in ["install", "start", "restart"]
+
+    - name: Show service status
+      debug:
+        msg: "Node Exporter is {{ service_status.status.ActiveState }}"
+      when: action in ["install", "start", "restart"] and service_status is defined
+
+  handlers:
+    - name: reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: start node_exporter
+      systemd:
+        name: node_exporter
+        state: started
+        enabled: yes

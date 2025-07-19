@@ -15,6 +15,27 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - quarkus-net
+      -
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - quarkus-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # This allows Prometheus to reach your host
 
   quarkus:
     image: quarkus/observe-jvm
@@ -38,6 +59,7 @@ services:
 volumes:
   postgres_data:
     driver: local
+  prometheus_data:
 
 networks:
   quarkus-net:

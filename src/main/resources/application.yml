@@ -1,6 +1,6 @@
 quarkus:
   log:
-    level: DEBUG
+    level: INFO
   hibernate-orm:
     schema-management:
       strategy: drop-and-create
