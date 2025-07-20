@@ -38,8 +38,10 @@ services:
       - "host.docker.internal:host-gateway"  # This allows Prometheus to reach your host
 
   quarkus:
-    image: quarkus/observe-jvm
     container_name: quarkus-app
+    build:
+      context: ./src/main/docker
+      dockerfile: Dockerfile.jvm
     depends_on:
       - postgres
     ports:
