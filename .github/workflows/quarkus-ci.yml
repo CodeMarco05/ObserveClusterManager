@@ -2,29 +2,14 @@ name: Quarkus ci
 
 on:
   push:
-    branches: [ "**" ]        # Run on any branch
+    branches: [ "**" ]
   pull_request:
-    branches: [ "**" ]        # For any PR
-  workflow_dispatch:          # Allow manual trigger
+    branches: [ "**" ]
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: self-hosted
-
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
 
     steps:
       - name: Checkout source code
@@ -36,33 +21,20 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Install PostgreSQL client
+      - name: Start PostgreSQL with Docker Compose
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-      - name: Wait for PostgreSQL and initialize database
-        run: |
-          # Wait for PostgreSQL with timeout
-          echo "Waiting for PostgreSQL to be ready..."
-          for i in {1..30}; do
-            if PGPASSWORD=postgres psql -h localhost -U postgres -c '\q' >/dev/null 2>&1; then
-              echo "PostgreSQL is ready!"
-              break
-            fi
-            echo "Attempt $i/30: PostgreSQL not ready, waiting..."
-            sleep 2
-          done
-
-          # Verify connection works
-          PGPASSWORD=postgres psql -h localhost -U postgres -c 'SELECT version();'
-
-          # Run the initialization script
-          echo "Running database initialization..."
-          PGPASSWORD=postgres psql -h localhost -U postgres -f db-init-scripts/init.dev.sql
+          docker-compose -f docker-compose.dev.yml up -d postgres
+          
+          # Wait for PostgreSQL to be ready
+          echo "Waiting for PostgreSQL to initialize..."
+          sleep 15
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
       - name: Run Quarkus tests
         run: ./gradlew clean build
+
+      - name: Cleanup
+        if: always()
+        run: docker-compose -f docker-compose.dev.yml down -v
