@@ -36,14 +36,16 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
       - name: Initialize PostgreSQL with custom schema
         run: |
-          # Wait for PostgreSQL to be ready
-          until pg_isready -h localhost -p 5432 -U postgres; do
-            echo "Waiting for PostgreSQL..."
-            sleep 2
-          done
-
+          # Wait for PostgreSQL service to be healthy
+          sleep 10
+          
           # Run the initialization script
           PGPASSWORD=postgres psql -h localhost -U postgres -f db-init-scripts/init.dev.sql
 
