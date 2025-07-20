@@ -16,9 +16,7 @@ quarkus:
     devservices:
       enabled: true
       show-logs: true
+
 app:
   prometheus:
     base-url: http://localhost:9090
-
-my-config:
-  config-location: ${config-location:file:config/system-config.yml}

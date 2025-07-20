@@ -1,5 +1,0 @@
-observe:
-  cpu-monitoring:
-    enabled: true
-    cpu-usage-file: /tmp/cpu_usage.txt
-    interval: 5s
