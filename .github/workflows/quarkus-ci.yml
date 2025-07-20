@@ -23,8 +23,8 @@ jobs:
 
       - name: Start PostgreSQL with Docker Compose
         run: |
-          docker-compose -f docker-compose.dev.yml up -d postgres
-          
+          docker compose -f docker-compose.dev.yml up -d postgres
+
           # Wait for PostgreSQL to be ready
           echo "Waiting for PostgreSQL to initialize..."
           sleep 15
@@ -37,4 +37,4 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker-compose -f docker-compose.dev.yml down -v
+        run: docker compose -f docker-compose.dev.yml down -v
