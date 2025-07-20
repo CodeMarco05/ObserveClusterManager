@@ -41,12 +41,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client
 
-      - name: Initialize PostgreSQL with custom schema
+      - name: Wait for PostgreSQL and initialize database
         run: |
-          # Wait for PostgreSQL service to be healthy
-          sleep 10
-          
+          # Wait for PostgreSQL with timeout
+          echo "Waiting for PostgreSQL to be ready..."
+          for i in {1..30}; do
+            if PGPASSWORD=postgres psql -h localhost -U postgres -c '\q' >/dev/null 2>&1; then
+              echo "PostgreSQL is ready!"
+              break
+            fi
+            echo "Attempt $i/30: PostgreSQL not ready, waiting..."
+            sleep 2
+          done
+
+          # Verify connection works
+          PGPASSWORD=postgres psql -h localhost -U postgres -c 'SELECT version();'
+
           # Run the initialization script
+          echo "Running database initialization..."
           PGPASSWORD=postgres psql -h localhost -U postgres -f db-init-scripts/init.dev.sql
 
       - name: Make gradlew executable
