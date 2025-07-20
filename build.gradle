@@ -25,6 +25,8 @@ dependencies {
 
     // password hasing
     implementation 'org.mindrot:jbcrypt:0.4'
+    implementation 'io.quarkus:quarkus-rest-client-jackson'
+    implementation 'io.quarkus:quarkus-rest-client'
 
     // Tests
     testImplementation 'io.quarkus:quarkus-junit5'

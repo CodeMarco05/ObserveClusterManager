@@ -1,13 +1,12 @@
 package com.observe.os1;
 
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 @Path("/test")
-public class TestEndpoint {
+public class HealthCheck {
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
