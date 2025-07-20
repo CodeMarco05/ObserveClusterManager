@@ -1,6 +1,8 @@
 package com.observe.os1.v1.metrics;
 
+import com.observe.os1.AppConfig;
 import com.observe.os1.v1.PrometheusUtil;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -23,9 +25,8 @@ import java.nio.charset.StandardCharsets;
 @Consumes(MediaType.APPLICATION_JSON)
 public class CpuResource {
 
-    // This class will handle CPU metrics related endpoints.
-    // You can define methods here to fetch CPU usage, load averages, etc.
-    // For example, you might have methods like getCpuUsage(), getLoadAverage(), etc.
+    @Inject
+    AppConfig appConfig;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -96,7 +97,8 @@ public class CpuResource {
                     .build();
         }
 
-        String baseUrl = "http://localhost:9090/api/v1/query_range";
+        String base = appConfig.prometheus().baseUrl();
+        String baseUrl = base + "/api/v1/query_range";
 
         // Query as in the curl command
         String query = "avg by (instance,mode) (irate(node_cpu_seconds_total{mode!=\"idle\"}[15s]))";
