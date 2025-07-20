@@ -11,6 +11,21 @@ jobs:
   test:
     runs-on: self-hosted
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -21,14 +36,6 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Setup PostgreSQL
-        uses: harmon758/postgresql-action@v2
-        with:
-          postgresql version: '16'
-          postgresql db: 'postgres'  # Use default postgres db for initial connection
-          postgresql user: 'postgres'
-          postgresql password: 'postgres'
-
       - name: Initialize PostgreSQL with custom schema
         run: |
           # Wait for PostgreSQL to be ready
@@ -36,7 +43,7 @@ jobs:
             echo "Waiting for PostgreSQL..."
             sleep 2
           done
-          
+
           # Run the initialization script
           PGPASSWORD=postgres psql -h localhost -U postgres -f db-init-scripts/init.dev.sql
 
