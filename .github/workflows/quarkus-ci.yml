@@ -21,6 +21,25 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup PostgreSQL
+        uses: harmon758/postgresql-action@v2
+        with:
+          postgresql version: '16'
+          postgresql db: 'postgres'  # Use default postgres db for initial connection
+          postgresql user: 'postgres'
+          postgresql password: 'postgres'
+
+      - name: Initialize PostgreSQL with custom schema
+        run: |
+          # Wait for PostgreSQL to be ready
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          
+          # Run the initialization script
+          PGPASSWORD=postgres psql -h localhost -U postgres -f db-init-scripts/init.dev.sql
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
