@@ -5,7 +5,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-@Path("/test")
+@Path("/health-check")
 public class HealthCheck {
 
     @GET
