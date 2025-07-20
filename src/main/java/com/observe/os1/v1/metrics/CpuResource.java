@@ -79,13 +79,13 @@ public class CpuResource {
 
         String baseUrl = "http://localhost:9090/api/v1/query_range";
 
-        // Query wie im curl-Befehl
+        // Query as in the curl command
         String query = "avg by (instance,mode) (irate(node_cpu_seconds_total{mode!=\"idle\"}[15s]))";
 
-        // Schrittweite (interval) in Prometheus-Syntax: z. B. "1s", "5s", "60s"
+        // Step size (interval) in Prometheus syntax: e.g. "1s", "5s", "60s"
         String step = interval + "s";
 
-        // URL mit Parametern zusammenbauen
+        // Build URL with parameters
         String urlWithParams = String.format("%s?query=%s&start=%s&end=%s&step=%s",
                 baseUrl,
                 URLEncoder.encode(query, StandardCharsets.UTF_8),
@@ -94,7 +94,7 @@ public class CpuResource {
                 URLEncoder.encode(step, StandardCharsets.UTF_8)
         );
 
-        // Anfrage ausführen
+        // Execute request
         URL url = new URL(urlWithParams);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -109,13 +109,13 @@ public class CpuResource {
         in.close();
         conn.disconnect();
 
-        // Überprüfen Sie den Statuscode der Antwort
+        // Check the response status code
         if (status != HttpURLConnection.HTTP_OK) {
             return Response.status(status)
                     .entity("Error fetching data from Prometheus: " + response.toString())
                     .build();
         }
-        // Geben Sie die Antwort zurück
+        // Return the response
         return Response.ok(response.toString())
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .build();
