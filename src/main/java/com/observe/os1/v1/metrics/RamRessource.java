@@ -1,7 +1,9 @@
 package com.observe.os1.v1.metrics;
 
 
+import com.observe.os1.AppConfig;
 import com.observe.os1.v1.PrometheusUtil;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -18,6 +20,9 @@ import java.nio.charset.StandardCharsets;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class RamRessource {
+
+    @Inject
+    AppConfig appConfig;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -77,13 +82,15 @@ public class RamRessource {
                     .entity("Missing required query parameters: startTime, endTime, interval")
                     .build();
         }
-        if (startTime < 0 || endTime < 0 || interval <= 0) {
+        // Validate the time range
+        if (startTime >= endTime) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Invalid query parameters: startTime, endTime must be non-negative and interval must be positive")
+                    .entity("startTime must be less than endTime")
                     .build();
         }
 
-        String baseUrl = "http://localhost:9090/api/v1/query_range";
+        String base = appConfig.prometheus().baseUrl();
+        String baseUrl = base + "/api/v1/query_range";
 
         // Query as in the curl command
         String query = "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100";
@@ -162,13 +169,71 @@ public class RamRessource {
                     .entity("Missing required query parameters: startTime, endTime, interval")
                     .build();
         }
-        if (startTime < 0 || endTime < 0 || interval <= 0) {
+        // Validate the time range
+        if (startTime >= endTime) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Invalid query parameters: startTime, endTime must be non-negative and interval must be positive")
+                    .entity("startTime must be less than endTime")
                     .build();
         }
 
-        String baseUrl = "http://localhost:9090/api/v1/query_range";
+        String base = appConfig.prometheus().baseUrl();
+        String baseUrl = base + "/api/v1/query_range";
+
+        // Query as in the curl command
+        String query = "node_memory_MemAvailable_bytes / 1024 / 1024 / 1024";
+
+        // Step size (interval) in Prometheus syntax: e.g. "1s", "5s", "60s"
+        String step = interval + "s";
+
+        // Build URL with parameters
+        String urlWithParams = String.format("%s?query=%s&start=%s&end=%s&step=%s",
+                baseUrl,
+                URLEncoder.encode(query, StandardCharsets.UTF_8),
+                URLEncoder.encode(startTime.toString(), StandardCharsets.UTF_8),
+                URLEncoder.encode(endTime.toString(), StandardCharsets.UTF_8),
+                URLEncoder.encode(step, StandardCharsets.UTF_8)
+        );
+
+        return PrometheusUtil.executePrometheusRequest(urlWithParams);
+    }
+
+    @GET
+    @Path("/used-memory-in-gb")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUsedMemoryInGB(
+            @QueryParam("startTime")
+            @Parameter(
+                    description = "Start time as Unix timestamp",
+                    example = "1752966880"
+            ) Long startTime,
+
+            @QueryParam("endTime")
+            @Parameter(
+                    description = "End time as Unix timestamp",
+                    example = "1752966940"
+            ) Long endTime,
+
+            @QueryParam("interval")
+            @Parameter(
+                    description = "Interval in seconds between data points",
+                    example = "15"
+            ) Integer interval
+    ) {
+        // check the parameters
+        if (startTime == null || endTime == null || interval == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Missing required query parameters: startTime, endTime, interval")
+                    .build();
+        }
+        // Validate the time range
+        if (startTime >= endTime) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("startTime must be less than endTime")
+                    .build();
+        }
+
+        String base = appConfig.prometheus().baseUrl();
+        String baseUrl = base + "/api/v1/query_range";
 
         // Query as in the curl command
         String query = "node_memory_MemAvailable_bytes / 1024 / 1024 / 1024";
