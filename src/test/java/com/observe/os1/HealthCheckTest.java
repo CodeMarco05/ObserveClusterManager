@@ -1,4 +1,4 @@
-package com.observe.os1.v1;
+package com.observe.os1;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;

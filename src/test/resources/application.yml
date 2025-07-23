@@ -1,4 +1,6 @@
 quarkus:
+  log:
+    level: INFO
   hibernate-orm:
     schema-management:
       strategy: drop-and-create
@@ -15,5 +17,6 @@ quarkus:
       enabled: true
       show-logs: true
 
-my-config:
-  config-location: ${config-location:file:config/system-config-test.yml}
+app:
+  prometheus:
+    base-url: ${PROMETHEUS_BASE_URL}

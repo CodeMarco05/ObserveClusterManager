@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 @Path("/v1/metrics/ram")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class RamRessource {
+public class RamResource {
 
     @Inject
     AppConfig appConfig;
@@ -236,7 +236,7 @@ public class RamRessource {
         String baseUrl = base + "/api/v1/query_range";
 
         // Query as in the curl command
-        String query = "node_memory_MemAvailable_bytes / 1024 / 1024 / 1024";
+        String query = "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 1024 / 1024 / 1024";
 
         // Step size (interval) in Prometheus syntax: e.g. "1s", "5s", "60s"
         String step = interval + "s";

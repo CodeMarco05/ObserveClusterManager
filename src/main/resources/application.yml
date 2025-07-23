@@ -19,4 +19,4 @@ quarkus:
 
 app:
   prometheus:
-    base-url: http://localhost:9090
+    base-url: ${PROMETHEUS_BASE_URL}

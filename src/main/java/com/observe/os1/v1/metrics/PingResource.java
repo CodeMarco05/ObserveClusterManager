@@ -9,27 +9,32 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Path("/v1/metrics/ping")
 @Produces(MediaType.APPLICATION_JSON)
 public class PingResource {
 
+    private final ExecutorService executor = Executors.newCachedThreadPool();
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
             summary = "Ping an IP address and return comprehensive ping information",
-            description = "Executes a ping command to the specified address and returns detailed network statistics including latency, packet loss, and system information in JSON format."
+            description = "Tests network connectivity to the specified address using Java's built-in networking and returns detailed network statistics including latency, packet loss, and system information in JSON format."
     )
     @APIResponse(
             responseCode = "200",
@@ -39,11 +44,11 @@ public class PingResource {
                     example = """
         {
           "address": "8.8.8.8",
-          "timestamp": "2025-07-20 15:31:00",
+          "timestamp": "2025-07-23 09:26:35",
           "requestedBy": "CodeMarco05",
           "success": true,
           "exitCode": 0,
-          "totalExecutionTimeMs": 3045,
+          "totalExecutionTimeMs": 1045,
           "packetCount": 4,
           "timeoutSeconds": 3,
           "packetsSent": 4,
@@ -55,83 +60,17 @@ public class PingResource {
           "avgLatencyMs": 16.3,
           "stdDeviationMs": 1.8,
           "latencies": [14.2, 16.1, 18.7, 16.2],
-          "ttl": 116,
+          "ttl": 64,
           "sequences": [1, 2, 3, 4],
-          "rawOutput": "PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data...\\n64 bytes from 8.8.8.8: icmp_seq=1 ttl=116 time=14.2 ms",
+          "rawOutput": "Java Network Connectivity Test Results",
           "errorOutput": "",
           "operatingSystem": "Linux",
-          "javaVersion": "17.0.2"
+          "javaVersion": "17.0.2",
+          "resolvedIpAddress": "8.8.8.8",
+          "dnsLookupTimeMs": 12.5
         }
         """
             )
-    )
-    @APIResponse(
-            responseCode = "408",
-            description = "Ping timeout or host unreachable",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    example = """
-        {
-          "address": "192.168.1.999",
-          "timestamp": "2025-07-20 15:31:00",
-          "requestedBy": "CodeMarco05",
-          "success": false,
-          "exitCode": 2,
-          "errorMessage": "Ping failed - host unreachable or timeout",
-          "totalExecutionTimeMs": 3000,
-          "packetCount": 4,
-          "timeoutSeconds": 3,
-          "packetsSent": 4,
-          "packetsReceived": 0,
-          "packetsLost": 4,
-          "packetLossPercentage": 100.0,
-          "minLatencyMs": 0.0,
-          "maxLatencyMs": 0.0,
-          "avgLatencyMs": 0.0,
-          "stdDeviationMs": 0.0,
-          "latencies": [],
-          "ttl": 0,
-          "sequences": [],
-          "rawOutput": "ping: 192.168.1.999: Name or service not known",
-          "errorOutput": "",
-          "operatingSystem": "Linux",
-          "javaVersion": "17.0.2"
-        }
-        """
-            )
-    )
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal server error during ping execution",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    example = """
-        {
-          "address": "8.8.8.8",
-          "timestamp": "2025-07-20 15:31:00",
-          "requestedBy": "CodeMarco05",
-          "success": false,
-          "exitCode": -1,
-          "errorMessage": "IO Error executing ping command: Process execution failed",
-          "totalExecutionTimeMs": 150,
-          "packetCount": 4,
-          "timeoutSeconds": 3,
-          "packetsSent": 0,
-          "packetsReceived": 0,
-          "packetsLost": 0,
-          "packetLossPercentage": 0.0,
-          "latencies": [],
-          "rawOutput": "",
-          "errorOutput": "Permission denied",
-          "operatingSystem": "Linux",
-          "javaVersion": "17.0.2"
-        }
-        """
-            )
-    )
-    @Schema(
-            name = "PingResponse",
-            description = "Comprehensive ping result containing all network statistics and system information"
     )
     @Path("/ping-ip-address")
     public Response pingAddress(
@@ -159,151 +98,165 @@ public class PingResource {
         result.requestedBy = "CodeMarco05";
         result.packetCount = count;
         result.timeoutSeconds = timeout;
+        result.packetsSent = count;
 
         try {
             long startTime = System.currentTimeMillis();
 
-            ProcessBuilder processBuilder;
-            String os = System.getProperty("os.name").toLowerCase();
+            // Perform Java-based network connectivity test
+            performJavaNetworkTest(result, address, count, timeout);
 
-            if (os.contains("win")) {
-                processBuilder = new ProcessBuilder(
-                        "ping", "-n", String.valueOf(count),
-                        "-w", String.valueOf(timeout * 1000), address
-                );
-            } else {
-                processBuilder = new ProcessBuilder(
-                        "ping", "-c", String.valueOf(count),
-                        "-W", String.valueOf(timeout), address
-                );
-            }
-
-            Process process = processBuilder.start();
-
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
-            );
-
-            BufferedReader errorReader = new BufferedReader(
-                    new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8)
-            );
-
-            StringBuilder output = new StringBuilder();
-            StringBuilder errorOutput = new StringBuilder();
-            String line;
-
-            // Read stdout
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
-                parsePingLine(line, result);
-            }
-
-            // Read stderr
-            while ((line = errorReader.readLine()) != null) {
-                errorOutput.append(line).append("\n");
-            }
-
-            int exitCode = process.waitFor();
             long endTime = System.currentTimeMillis();
-
-            result.exitCode = exitCode;
-            result.success = exitCode == 0 && result.packetsReceived > 0;
             result.totalExecutionTimeMs = endTime - startTime;
-            result.rawOutput = output.toString().trim();
-            result.errorOutput = errorOutput.toString().trim();
 
             // Calculate statistics
             calculateStatistics(result);
 
-            // Determine HTTP status code
+            // Set success based on received packets
+            result.success = result.packetsReceived > 0;
+            result.exitCode = result.success ? 0 : 1;
+
             if (result.success) {
                 return Response.ok(result).build();
             } else {
-                result.errorMessage = "Ping failed - host unreachable or timeout";
+                result.errorMessage = "Network connectivity test failed - host unreachable or timeout";
                 return Response.status(Response.Status.REQUEST_TIMEOUT).entity(result).build();
             }
 
-        } catch (IOException e) {
-            result.success = false;
-            result.errorMessage = "IO Error executing ping command: " + e.getMessage();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(result).build();
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            result.success = false;
-            result.errorMessage = "Ping command interrupted: " + e.getMessage();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(result).build();
-
         } catch (Exception e) {
             result.success = false;
-            result.errorMessage = "Unexpected error: " + e.getMessage();
+            result.exitCode = -1;
+            result.errorMessage = "Error executing network test: " + e.getMessage();
+            result.errorOutput = e.getClass().getSimpleName() + ": " + e.getMessage();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(result).build();
         }
     }
 
-    private void parsePingLine(String line, PingResult result) {
+    private void performJavaNetworkTest(PingResult result, String address, int count, int timeoutSeconds) {
         try {
-            // Parse individual ping responses
-            if (line.contains("time=") || line.contains("time<")) {
-                result.packetsReceived++;
+            // DNS resolution with timing
+            long dnsStart = System.nanoTime();
+            InetAddress inetAddress = InetAddress.getByName(address);
+            long dnsEnd = System.nanoTime();
 
-                // Extract latency
-                Pattern latencyPattern = Pattern.compile("time[<=](\\d+(?:\\.\\d+)?)");
-                Matcher latencyMatcher = latencyPattern.matcher(line);
-                if (latencyMatcher.find()) {
-                    double latency = Double.parseDouble(latencyMatcher.group(1));
-                    result.latencies.add(latency);
-                }
+            result.resolvedIpAddress = inetAddress.getHostAddress();
+            result.dnsLookupTimeMs = (dnsEnd - dnsStart) / 1_000_000.0;
 
-                // Extract TTL
-                Pattern ttlPattern = Pattern.compile("ttl=(\\d+)");
-                Matcher ttlMatcher = ttlPattern.matcher(line);
-                if (ttlMatcher.find()) {
-                    result.ttl = Integer.parseInt(ttlMatcher.group(1));
-                }
+            StringBuilder output = new StringBuilder();
+            output.append("Java Network Connectivity Test Results\n");
+            output.append("Target: ").append(address).append(" (").append(result.resolvedIpAddress).append(")\n");
+            output.append("DNS Lookup Time: ").append(String.format("%.2f", result.dnsLookupTimeMs)).append(" ms\n\n");
 
-                // Extract sequence number
-                Pattern seqPattern = Pattern.compile("icmp_seq=(\\d+)");
-                Matcher seqMatcher = seqPattern.matcher(line);
-                if (seqMatcher.find()) {
-                    result.sequences.add(Integer.parseInt(seqMatcher.group(1)));
-                }
-            }
+            // Perform multiple connectivity tests
+            List<CompletableFuture<ConnectivityResult>> futures = new ArrayList<>();
 
-            // Parse summary statistics (Linux/Mac)
-            if (line.contains("packets transmitted")) {
-                Pattern statsPattern = Pattern.compile("(\\d+) packets transmitted, (\\d+) (?:packets )?received");
-                Matcher statsMatcher = statsPattern.matcher(line);
-                if (statsMatcher.find()) {
-                    result.packetsSent = Integer.parseInt(statsMatcher.group(1));
-                    result.packetsReceived = Integer.parseInt(statsMatcher.group(2));
+            for (int i = 1; i <= count; i++) {
+                final int sequence = i;
+                CompletableFuture<ConnectivityResult> future = CompletableFuture.supplyAsync(() -> {
+                    return performSingleConnectivityTest(inetAddress, timeoutSeconds, sequence);
+                }, executor);
+                futures.add(future);
+
+                // Small delay between tests to simulate ping behavior
+                if (i < count) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
                 }
             }
 
-            // Parse Windows statistics
-            if (line.contains("Sent =") && line.contains("Received =")) {
-                Pattern winPattern = Pattern.compile("Sent = (\\d+), Received = (\\d+), Lost = (\\d+)");
-                Matcher winMatcher = winPattern.matcher(line);
-                if (winMatcher.find()) {
-                    result.packetsSent = Integer.parseInt(winMatcher.group(1));
-                    result.packetsReceived = Integer.parseInt(winMatcher.group(2));
-                    result.packetsLost = Integer.parseInt(winMatcher.group(3));
+            // Collect results
+            for (CompletableFuture<ConnectivityResult> future : futures) {
+                try {
+                    ConnectivityResult connectResult = future.get(timeoutSeconds + 1, TimeUnit.SECONDS);
+
+                    if (connectResult.success) {
+                        result.packetsReceived++;
+                        result.latencies.add(connectResult.latencyMs);
+                        result.sequences.add(connectResult.sequence);
+                        result.ttl = Math.max(result.ttl, connectResult.estimatedTtl);
+
+                        output.append(String.format("Response from %s: seq=%d time=%.2f ms ttl=%d\n",
+                                result.resolvedIpAddress, connectResult.sequence,
+                                connectResult.latencyMs, connectResult.estimatedTtl));
+                    } else {
+                        output.append(String.format("Request timeout for seq=%d\n", connectResult.sequence));
+                    }
+                } catch (Exception e) {
+                    output.append(String.format("Error for sequence %d: %s\n",
+                            futures.indexOf(future) + 1, e.getMessage()));
                 }
             }
 
+            result.rawOutput = output.toString();
+
+        } catch (UnknownHostException e) {
+            result.errorMessage = "Unknown host: " + address;
+            result.errorOutput = e.getMessage();
+            result.rawOutput = "DNS resolution failed for " + address;
         } catch (Exception e) {
-            // Ignore parsing errors for individual lines
+            result.errorMessage = "Network test failed: " + e.getMessage();
+            result.errorOutput = e.getMessage();
+            result.rawOutput = "Network connectivity test encountered an error";
         }
+    }
+
+    private ConnectivityResult performSingleConnectivityTest(InetAddress address, int timeoutSeconds, int sequence) {
+        ConnectivityResult result = new ConnectivityResult();
+        result.sequence = sequence;
+        result.estimatedTtl = 64; // Default TTL estimate
+
+        long startTime = System.nanoTime();
+
+        try {
+            // Try multiple approaches for better connectivity testing
+
+            // Approach 1: InetAddress.isReachable (ICMP if available, otherwise TCP)
+            boolean reachableViaICMP = address.isReachable(timeoutSeconds * 1000);
+
+            if (reachableViaICMP) {
+                long endTime = System.nanoTime();
+                result.latencyMs = (endTime - startTime) / 1_000_000.0;
+                result.success = true;
+                return result;
+            }
+
+            // Approach 2: TCP connection test to common ports if ICMP fails
+            int[] commonPorts = {80, 443, 53, 22, 21, 25, 110, 995, 993, 143};
+
+            for (int port : commonPorts) {
+                try (Socket socket = new Socket()) {
+                    long tcpStart = System.nanoTime();
+                    socket.connect(new InetSocketAddress(address, port), timeoutSeconds * 1000);
+                    long tcpEnd = System.nanoTime();
+
+                    result.latencyMs = (tcpEnd - tcpStart) / 1_000_000.0;
+                    result.success = true;
+                    result.estimatedTtl = 64; // Estimate based on typical values
+                    return result;
+                } catch (IOException e) {
+                    // Port not open, try next one
+                    continue;
+                }
+            }
+
+            // If no ports are open, still check if we got any network response
+            result.success = false;
+            result.latencyMs = 0.0;
+
+        } catch (IOException e) {
+            result.success = false;
+            result.latencyMs = 0.0;
+        }
+
+        return result;
     }
 
     private void calculateStatistics(PingResult result) {
-        if (result.packetsSent == 0) {
-            result.packetsSent = result.packetCount;
-        }
-
-        if (result.packetsLost == 0 && result.packetsSent > 0) {
-            result.packetsLost = result.packetsSent - result.packetsReceived;
-        }
+        result.packetsLost = result.packetsSent - result.packetsReceived;
 
         if (result.packetsSent > 0) {
             result.packetLossPercentage = ((double) result.packetsLost / result.packetsSent) * 100.0;
@@ -324,13 +277,20 @@ public class PingResource {
         }
     }
 
+    // Helper class for connectivity test results
+    private static class ConnectivityResult {
+        boolean success;
+        double latencyMs;
+        int sequence;
+        int estimatedTtl;
+    }
+
     @Schema(description = "Complete ping result with network statistics and system information")
     public static class PingResult {
-
         @Schema(description = "The target IP address or hostname that was pinged", example = "8.8.8.8")
         public String address;
 
-        @Schema(description = "UTC timestamp when the ping was executed (YYYY-MM-DD HH:MM:SS format)", example = "2025-07-20 15:31:00")
+        @Schema(description = "UTC timestamp when the ping was executed (YYYY-MM-DD HH:MM:SS format)", example = "2025-07-23 09:26:35")
         public String timestamp;
 
         @Schema(description = "Username of the person who requested the ping", example = "CodeMarco05")
@@ -339,70 +299,70 @@ public class PingResource {
         @Schema(description = "Overall success status - true if at least one packet was received", example = "true")
         public boolean success;
 
-        @Schema(description = "Process exit code from ping command (0 = success, >0 = failure)", example = "0")
+        @Schema(description = "Process exit code (0 = success, >0 = failure)", example = "0")
         public int exitCode;
 
-        @Schema(description = "Error message if ping failed, null if successful", example = "Ping failed - host unreachable or timeout")
+        @Schema(description = "Error message if ping failed, null if successful")
         public String errorMessage;
 
-        @Schema(description = "Total time taken to execute ping command in milliseconds", example = "3045")
+        @Schema(description = "Total time taken to execute connectivity test in milliseconds", example = "1045")
         public long totalExecutionTimeMs;
 
-        // Ping Configuration
-        @Schema(description = "Number of ping packets that were configured to be sent", example = "4")
+        @Schema(description = "Number of connectivity tests configured to be performed", example = "4")
         public int packetCount;
 
-        @Schema(description = "Timeout configured for each ping packet in seconds", example = "3")
+        @Schema(description = "Timeout configured for each test in seconds", example = "3")
         public int timeoutSeconds;
 
-        // Packet Statistics
-        @Schema(description = "Actual number of packets sent by ping command", example = "4")
+        @Schema(description = "Number of connectivity tests performed", example = "4")
         public int packetsSent = 0;
 
-        @Schema(description = "Number of packets that received a response", example = "4")
+        @Schema(description = "Number of successful connectivity tests", example = "4")
         public int packetsReceived = 0;
 
-        @Schema(description = "Number of packets that were lost (sent - received)", example = "0")
+        @Schema(description = "Number of failed connectivity tests", example = "0")
         public int packetsLost = 0;
 
-        @Schema(description = "Packet loss percentage calculated as (lost/sent)*100", example = "0.0")
+        @Schema(description = "Failure percentage calculated as (lost/sent)*100", example = "0.0")
         public double packetLossPercentage = 0.0;
 
-        // Latency Statistics
-        @Schema(description = "Minimum response time in milliseconds across all packets", example = "14.2")
+        @Schema(description = "Minimum response time in milliseconds", example = "14.2")
         public double minLatencyMs = 0.0;
 
-        @Schema(description = "Maximum response time in milliseconds across all packets", example = "18.7")
+        @Schema(description = "Maximum response time in milliseconds", example = "18.7")
         public double maxLatencyMs = 0.0;
 
-        @Schema(description = "Average response time in milliseconds across all packets", example = "16.3")
+        @Schema(description = "Average response time in milliseconds", example = "16.3")
         public double avgLatencyMs = 0.0;
 
-        @Schema(description = "Standard deviation of response times indicating consistency", example = "1.8")
+        @Schema(description = "Standard deviation of response times", example = "1.8")
         public double stdDeviationMs = 0.0;
 
-        @Schema(description = "Array of individual response times in milliseconds for each packet", example = "[14.2, 16.1, 18.7, 16.2]")
+        @Schema(description = "Array of individual response times in milliseconds", example = "[14.2, 16.1, 18.7, 16.2]")
         public List<Double> latencies = new ArrayList<>();
 
-        // Network Information
-        @Schema(description = "Time To Live value from ping responses (indicates network hops)", example = "116")
+        @Schema(description = "Estimated Time To Live value", example = "64")
         public int ttl = 0;
 
-        @Schema(description = "ICMP sequence numbers from each ping response", example = "[1, 2, 3, 4]")
+        @Schema(description = "Sequence numbers from each connectivity test", example = "[1, 2, 3, 4]")
         public List<Integer> sequences = new ArrayList<>();
 
-        // Raw Output
-        @Schema(description = "Complete raw output from ping command for debugging purposes")
+        @Schema(description = "Complete output from connectivity test")
         public String rawOutput;
 
-        @Schema(description = "Error output from ping command if any errors occurred")
+        @Schema(description = "Error output if any errors occurred")
         public String errorOutput;
 
-        // System Information
-        @Schema(description = "Operating system where ping was executed", example = "Linux")
+        @Schema(description = "Operating system where test was executed", example = "Linux")
         public String operatingSystem = System.getProperty("os.name");
 
-        @Schema(description = "Java version used to execute the ping", example = "17.0.2")
+        @Schema(description = "Java version used to execute the test", example = "21.0.1")
         public String javaVersion = System.getProperty("java.version");
+
+        @Schema(description = "Resolved IP address of the target", example = "8.8.8.8")
+        public String resolvedIpAddress;
+
+        @Schema(description = "Time taken for DNS lookup in milliseconds", example = "12.5")
+        public double dnsLookupTimeMs = 0.0;
     }
 }

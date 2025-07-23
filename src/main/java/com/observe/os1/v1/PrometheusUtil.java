@@ -12,30 +12,25 @@ import java.net.URL;
 
 public class PrometheusUtil {
     public static Response executePrometheusRequest(String urlWithParams) {
+        HttpURLConnection conn = null;
         try {
             // Execute request
             URL url = new URL(urlWithParams);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 
             int status = conn.getResponseCode();
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = in.readLine()) != null) {
-                response.append(line);
-            }
-            in.close();
-            conn.disconnect();
+            String responseBody = readResponse(conn, status);
 
             // Check the response status code
             if (status != HttpURLConnection.HTTP_OK) {
                 return Response.status(status)
-                        .entity("Error fetching data from Prometheus: " + response.toString())
+                        .entity("Error fetching data from Prometheus: " + responseBody)
                         .build();
             }
+
             // Return the response
-            return Response.ok(response.toString())
+            return Response.ok(responseBody)
                     .header("Content-Type", MediaType.APPLICATION_JSON)
                     .build();
 
@@ -47,6 +42,32 @@ public class PrometheusUtil {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Error connecting to Prometheus: " + e.getMessage())
                     .build();
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
+    }
+
+    private static String readResponse(HttpURLConnection conn, int status) throws IOException {
+        BufferedReader reader;
+
+        // Use error stream for HTTP error codes, input stream for success
+        if (status >= 400) {
+            reader = new BufferedReader(new InputStreamReader(
+                    conn.getErrorStream() != null ? conn.getErrorStream() : conn.getInputStream()
+            ));
+        } else {
+            reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        }
+
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            response.append(line);
+        }
+        reader.close();
+
+        return response.toString();
     }
 }
