@@ -7,6 +7,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndServer;
 
+
+import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockserver.matchers.Times.exactly;
@@ -21,6 +24,7 @@ class RamResourceTest {
 
     @BeforeEach
     void setUp() {
+        printAllEnvironmentVariables();
         mockServer = ClientAndServer.startClientAndServer(MOCK_SERVER_PORT);
         // Configure your app to use mock server for Prometheus
         System.setProperty("observe.prometheus.base-url", "http://localhost:" + MOCK_SERVER_PORT);
@@ -32,6 +36,15 @@ class RamResourceTest {
             mockServer.stop();
         }
         System.clearProperty("observe.prometheus.base-url");
+    }
+
+    private void printAllEnvironmentVariables() {
+        System.out.println("=== Environment Variables ===");
+        System.getenv().entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry ->
+                        System.out.println(entry.getKey() + " = " + entry.getValue())
+                );
     }
 
     // SUCCESS TESTS
@@ -111,19 +124,18 @@ class RamResourceTest {
                 }
                 """;
 
-        String test = "test";
-
         mockServer
                 .when(request()
                         .withMethod("GET")
-                        .withPath("/v1/metrics/ram/free-memory-in-gb")
+                        .withPath("/api/v1/query_range")
                         .withQueryStringParameter("start", "1752966880")
                         .withQueryStringParameter("end", "1752966890")
-                        .withQueryStringParameter("step", "5s"))
+                        .withQueryStringParameter("step", "5s")
+                        .withQueryStringParameter("query", "node_memory_MemAvailable_bytes / 1024 / 1024 / 1024"))
                 .respond(response()
                         .withStatusCode(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(test));
+                        .withBody(prometheusResponse));
 
         given()
                 .queryParam("startTime", 1752966880)
