@@ -17,6 +17,11 @@ quarkus:
       enabled: true
       show-logs: true
 
-app:
-  prometheus:
-    base-url: http://localhost:9999
+  rest-client:
+    prometheus-metrics-client:
+      url: http://localhost:9999
+
+
+mockserver:
+  port: 9999
+  host: localhost

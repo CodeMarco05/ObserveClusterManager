@@ -1,6 +1,5 @@
 package com.observe.os1.v1.metrics;
 
-import com.observe.os1.v1.PrometheusUtil;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;

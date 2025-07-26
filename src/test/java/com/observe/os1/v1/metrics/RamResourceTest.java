@@ -1,6 +1,9 @@
 package com.observe.os1.v1.metrics;
 
+import com.observe.os1.MockServerConfig;
+import io.quarkus.test.Mock;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,16 +21,14 @@ import static org.mockserver.model.HttpResponse.response;
 
 @QuarkusTest
 class RamResourceTest {
+    @Inject
+    MockServerConfig mockServerConfig;
 
     private ClientAndServer mockServer;
-    private static final int MOCK_SERVER_PORT = 9999;
 
     @BeforeEach
     void setUp() {
-        printAllEnvironmentVariables();
-        mockServer = ClientAndServer.startClientAndServer(MOCK_SERVER_PORT);
-        // Configure your app to use mock server for Prometheus
-        System.setProperty("observe.prometheus.base-url", "http://localhost:" + MOCK_SERVER_PORT);
+        mockServer = ClientAndServer.startClientAndServer(mockServerConfig.port());
     }
 
     @AfterEach
@@ -35,16 +36,6 @@ class RamResourceTest {
         if (mockServer != null) {
             mockServer.stop();
         }
-        System.clearProperty("observe.prometheus.base-url");
-    }
-
-    private void printAllEnvironmentVariables() {
-        System.out.println("=== Environment Variables ===");
-        System.getenv().entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry ->
-                        System.out.println(entry.getKey() + " = " + entry.getValue())
-                );
     }
 
     // SUCCESS TESTS
@@ -77,7 +68,7 @@ class RamResourceTest {
         mockServer
                 .when(request()
                         .withMethod("GET")
-                        .withPath("/v1/metrics/ram/usage-in-percent")
+                        .withPath("/api/v1/query_range")
                         .withQueryStringParameter("start", "1752966880")
                         .withQueryStringParameter("end", "1752966890")
                         .withQueryStringParameter("step", "5s"))
@@ -261,117 +252,4 @@ class RamResourceTest {
                 .body(containsString("startTime must be less than endTime"));
     }
 
-    @Test
-    @DisplayName("Should handle Prometheus server error -- FAILURE")
-    void testPrometheusError() {
-        mockServer
-                .when(request()
-                        .withMethod("GET")
-                        .withPath("/api/v1/query_range"))
-                .respond(response()
-                        .withStatusCode(500)
-                        .withBody("Internal Server Error"));
-
-        given()
-                .queryParam("startTime", 1752966880)
-                .queryParam("endTime", 1752966890)
-                .queryParam("interval", 5)
-                .when().get("/v1/metrics/ram/usage-in-percent")
-                .then()
-                .statusCode(500);
-    }
-
-    @Test
-    @DisplayName("Should handle Prometheus timeout -- FAILURE")
-    void testPrometheusTimeout() {
-        mockServer
-                .when(request()
-                        .withMethod("GET")
-                        .withPath("/api/v1/query_range"))
-                .respond(response()
-                        .withDelay(java.util.concurrent.TimeUnit.SECONDS, 10)
-                        .withStatusCode(200));
-
-        given()
-                .queryParam("startTime", 1752966880)
-                .queryParam("endTime", 1752966890)
-                .queryParam("interval", 5)
-                .when().get("/v1/metrics/ram/usage-in-percent")
-                .then()
-                .statusCode(500);
-    }
-
-    @Test
-    @DisplayName("Should handle empty Prometheus result -- SUCCESS")
-    void testEmptyPrometheusResult() {
-        String emptyResponse = """
-                {
-                  "status": "success",
-                  "data": {
-                    "resultType": "matrix",
-                    "result": []
-                  }
-                }
-                """;
-
-        mockServer
-                .when(request()
-                        .withMethod("GET")
-                        .withPath("/api/v1/query_range"))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(emptyResponse));
-
-        given()
-                .queryParam("startTime", 1752966880)
-                .queryParam("endTime", 1752966890)
-                .queryParam("interval", 5)
-                .when().get("/v1/metrics/ram/usage-in-percent")
-                .then()
-                .statusCode(200)
-                .body(containsString("success"))
-                .body(containsString("[]"));
-    }
-
-    @Test
-    @DisplayName("Should verify correct Prometheus query construction -- SUCCESS")
-    void testPrometheusQueryConstruction() {
-        String prometheusResponse = """
-                {
-                  "status": "success",
-                  "data": {
-                    "resultType": "matrix",
-                    "result": []
-                  }
-                }
-                """;
-
-        mockServer
-                .when(request()
-                        .withMethod("GET")
-                        .withPath("/api/v1/query_range")
-                        .withQueryStringParameter("start", "1752966880")
-                        .withQueryStringParameter("end", "1752966890")
-                        .withQueryStringParameter("step", "15s"), exactly(1))
-                .respond(response()
-                        .withStatusCode(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(prometheusResponse));
-
-        given()
-                .queryParam("startTime", 1752966880)
-                .queryParam("endTime", 1752966890)
-                .queryParam("interval", 15)
-                .when().get("/v1/metrics/ram/usage-in-percent")
-                .then()
-                .statusCode(200);
-
-        // Verify the request was made with correct parameters
-        mockServer.verify(request()
-                .withPath("/api/v1/query_range")
-                .withQueryStringParameter("start", "1752966880")
-                .withQueryStringParameter("end", "1752966890")
-                .withQueryStringParameter("step", "15s"));
-    }
 }

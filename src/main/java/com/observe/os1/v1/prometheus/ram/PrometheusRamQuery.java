@@ -10,9 +10,7 @@ public enum PrometheusRamQuery {
     PrometheusRamQuery(String query) {
         this.query = query;
     }
-    public String getQuery() {
-        return query;
-    }
+
     @Override
     public String toString() {
         return query;

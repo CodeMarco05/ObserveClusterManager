@@ -2,9 +2,8 @@ package com.observe.os1.v1.metrics;
 
 
 import com.observe.os1.AppConfig;
-import com.observe.os1.v1.PrometheusUtil;
-import com.observe.os1.v1.prometheus.ram.PrometheusRamRestClient;
-import com.observe.os1.v1.prometheus.ram.RamQueryType;
+import com.observe.os1.v1.PrometheusRestClient;
+import com.observe.os1.v1.prometheus.ram.PrometheusRamQuery;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -16,9 +15,6 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 @Path("/v1/metrics/ram")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -29,7 +25,7 @@ public class RamResource {
 
     @Inject
     @RestClient
-    PrometheusRamRestClient prometheusRamRestClient;
+    PrometheusRestClient prometheusRestClient;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -97,8 +93,8 @@ public class RamResource {
         }
 
         // test the rest client
-        return prometheusRamRestClient.getRamUsageAsPercentage(
-                RamQueryType.RAM_USAGE_PERCENTAGE,
+        return prometheusRestClient.universalTimeQuery(
+                PrometheusRamQuery.MEMORY_USAGE_PERCENTAGE.toString(),
                 startTime.toString(),
                 endTime.toString(),
                 interval + "s"
@@ -139,7 +135,7 @@ public class RamResource {
                     )
             )
     )
-    public Response getFreeMemory(
+    public Response getFreeMemoryInGB(
             @QueryParam("startTime")
             @Parameter(
                     description = "Start time as Unix timestamp",
@@ -171,25 +167,12 @@ public class RamResource {
                     .build();
         }
 
-        String base = appConfig.prometheus().baseUrl();
-        String baseUrl = base + "/api/v1/query_range";
-
-        // Query as in the curl command
-        String query = "node_memory_MemAvailable_bytes / 1024 / 1024 / 1024";
-
-        // Step size (interval) in Prometheus syntax: e.g. "1s", "5s", "60s"
-        String step = interval + "s";
-
-        // Build URL with parameters
-        String urlWithParams = String.format("%s?query=%s&start=%s&end=%s&step=%s",
-                baseUrl,
-                URLEncoder.encode(query, StandardCharsets.UTF_8),
-                URLEncoder.encode(startTime.toString(), StandardCharsets.UTF_8),
-                URLEncoder.encode(endTime.toString(), StandardCharsets.UTF_8),
-                URLEncoder.encode(step, StandardCharsets.UTF_8)
+        return prometheusRestClient.universalTimeQuery(
+                PrometheusRamQuery.MEMORY_AVAILABLE_GB.toString(),
+                startTime.toString(),
+                endTime.toString(),
+                interval + "s"
         );
-
-        return PrometheusUtil.executePrometheusRequest(urlWithParams);
     }
 
     @GET
@@ -227,24 +210,11 @@ public class RamResource {
                     .build();
         }
 
-        String base = appConfig.prometheus().baseUrl();
-        String baseUrl = base + "/api/v1/query_range";
-
-        // Query as in the curl command
-        String query = "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 1024 / 1024 / 1024";
-
-        // Step size (interval) in Prometheus syntax: e.g. "1s", "5s", "60s"
-        String step = interval + "s";
-
-        // Build URL with parameters
-        String urlWithParams = String.format("%s?query=%s&start=%s&end=%s&step=%s",
-                baseUrl,
-                URLEncoder.encode(query, StandardCharsets.UTF_8),
-                URLEncoder.encode(startTime.toString(), StandardCharsets.UTF_8),
-                URLEncoder.encode(endTime.toString(), StandardCharsets.UTF_8),
-                URLEncoder.encode(step, StandardCharsets.UTF_8)
+        return prometheusRestClient.universalTimeQuery(
+                PrometheusRamQuery.MEMORY_USAGE_GB.toString(),
+                startTime.toString(),
+                endTime.toString(),
+                interval + "s"
         );
-
-        return PrometheusUtil.executePrometheusRequest(urlWithParams);
     }
 }
