@@ -1,6 +1,7 @@
 package com.observe.os1.v1.metrics;
 
-import com.observe.os1.AppConfig;
+import com.observe.os1.v1.PrometheusRestClient;
+import com.observe.os1.v1.prometheusQueries.CpuQuereis;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -10,12 +11,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 @Path("/v1/metrics/cpu")
 @Produces(MediaType.APPLICATION_JSON)
@@ -23,12 +19,13 @@ import java.nio.charset.StandardCharsets;
 public class CpuResource {
 
     @Inject
-    AppConfig appConfig;
+    @RestClient
+    PrometheusRestClient prometheusRestClient;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Get Prometheus metrics")
-    @Path("/usage-as-percentage")
+    @Path("/usage-in-percent")
     @APIResponse(
             responseCode = "200",
             description = "Prometheus query response",
@@ -61,7 +58,7 @@ public class CpuResource {
                     )
             )
     )
-    public Response getCpuUsageAsPercentage(
+    public Response getCpuUsageInPercent(
             @QueryParam("startTime")
             @Parameter(
                     description = "Start time as Unix timestamp",
@@ -94,60 +91,12 @@ public class CpuResource {
                     .build();
         }
 
-        String base = appConfig.prometheus().baseUrl();
-        String baseUrl = base + "/api/v1/query_range";
-
-        // Query as in the curl command
-        String query = "avg by (instance,mode) (irate(node_cpu_seconds_total{mode!=\"idle\"}[15s]))";
-
-        // Step size (interval) in Prometheus syntax: e.g. "1s", "5s", "60s"
-        String step = interval + "s";
-
-        // Build URL with parameters
-        String urlWithParams = String.format("%s?query=%s&start=%s&end=%s&step=%s",
-                baseUrl,
-                URLEncoder.encode(query, StandardCharsets.UTF_8),
-                URLEncoder.encode(startTime.toString(), StandardCharsets.UTF_8),
-                URLEncoder.encode(endTime.toString(), StandardCharsets.UTF_8),
-                URLEncoder.encode(step, StandardCharsets.UTF_8)
+        return prometheusRestClient.universalTimeQuery(
+                CpuQuereis.CPU_USAGE_PERCENTAGE.toString(),
+                startTime.toString(),
+                endTime.toString(),
+                interval + "s"
         );
-
-        try {
-            // Execute request
-            URL url = new URL(urlWithParams);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-
-            int status = conn.getResponseCode();
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = in.readLine()) != null) {
-                response.append(line);
-            }
-            in.close();
-            conn.disconnect();
-
-            // Check the response status code
-            if (status != HttpURLConnection.HTTP_OK) {
-                return Response.status(status)
-                        .entity("Error fetching data from Prometheus: " + response.toString())
-                        .build();
-            }
-            // Return the response
-            return Response.ok(response.toString())
-                    .header("Content-Type", MediaType.APPLICATION_JSON)
-                    .build();
-
-        } catch (MalformedURLException e) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Invalid URL: " + e.getMessage())
-                    .build();
-        } catch (IOException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error connecting to Prometheus: " + e.getMessage())
-                    .build();
-        }
     }
 
 

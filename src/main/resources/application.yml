@@ -20,7 +20,3 @@ quarkus:
   rest-client:
     prometheus-metrics-client:
       url: ${PROMETHEUS_BASE_URL}
-
-app:
-  prometheus:
-    base-url: ${PROMETHEUS_BASE_URL}

@@ -3,7 +3,7 @@ package com.observe.os1.v1.metrics;
 
 import com.observe.os1.AppConfig;
 import com.observe.os1.v1.PrometheusRestClient;
-import com.observe.os1.v1.prometheus.ram.PrometheusRamQuery;
+import com.observe.os1.v1.prometheusQueries.RamQuery;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -94,7 +94,7 @@ public class RamResource {
 
         // test the rest client
         return prometheusRestClient.universalTimeQuery(
-                PrometheusRamQuery.MEMORY_USAGE_PERCENTAGE.toString(),
+                RamQuery.MEMORY_USAGE_PERCENTAGE.toString(),
                 startTime.toString(),
                 endTime.toString(),
                 interval + "s"
@@ -168,16 +168,48 @@ public class RamResource {
         }
 
         return prometheusRestClient.universalTimeQuery(
-                PrometheusRamQuery.MEMORY_AVAILABLE_GB.toString(),
+                RamQuery.MEMORY_AVAILABLE_GB.toString(),
                 startTime.toString(),
                 endTime.toString(),
                 interval + "s"
         );
     }
 
+
+
     @GET
     @Path("/used-memory-in-gb")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Get used memory metrics in GB")
+    @APIResponse(
+            responseCode = "200",
+            description = "Prometheus query response for used memory in GB",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(
+                            description = "Response containing used memory in GB",
+                            example = """
+                                    {
+                                      "status": "success",
+                                      "data": {
+                                        "resultType": "matrix",
+                                        "result": [
+                                          {
+                                            "metric": {
+                                              "instance": "host.docker.internal:9100"
+                                            },
+                                            "values": [
+                                              [1752966880, "7.5"],
+                                              [1752966882, "7.3"]
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    }
+                                    """
+                    )
+            )
+    )
     public Response getUsedMemoryInGB(
             @QueryParam("startTime")
             @Parameter(
@@ -211,7 +243,7 @@ public class RamResource {
         }
 
         return prometheusRestClient.universalTimeQuery(
-                PrometheusRamQuery.MEMORY_USAGE_GB.toString(),
+                RamQuery.MEMORY_USAGE_GB.toString(),
                 startTime.toString(),
                 endTime.toString(),
                 interval + "s"

@@ -1,5 +1,8 @@
 package com.observe.os1.v1.metrics;
 
+import com.observe.os1.v1.PrometheusRestClient;
+import com.observe.os1.v1.prometheusQueries.DiskQueries;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -8,11 +11,16 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 @Path("/v1/metrics/disk")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class DiskResource {
+
+    @Inject
+    @RestClient
+    PrometheusRestClient prometheusRestClient;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -79,24 +87,12 @@ public class DiskResource {
                     .build();
         }
 
-        String baseUrl = "http://localhost:9090/api/v1/query_range";
-
-        // Query as in the curl command
-        String query = "node_filesystem_free_bytes{fstype!=\"tmpfs\",fstype!=\"devtmpfs\"} / 1024 / 1024 / 1024";
-
-        // Step size (interval) in Prometheus syntax: e.g. "1s", "5s", "60s"
-        String step = interval + "s";
-
-        // Build URL with parameters
-        String urlWithParams = String.format("%s?query=%s&start=%s&end=%s&step=%s",
-                baseUrl,
-                query,
-                startTime,
-                endTime,
-                step
+        return prometheusRestClient.universalTimeQuery(
+                DiskQueries.DISK_USAGE_IN_GB.toString(),
+                startTime.toString(),
+                endTime.toString(),
+                interval + "s"
         );
-
-        return PrometheusUtil.executePrometheusRequest(urlWithParams);
     }
 
 }
