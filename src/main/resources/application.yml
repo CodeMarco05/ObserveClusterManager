@@ -16,6 +16,9 @@ quarkus:
     devservices:
       enabled: true
       show-logs: true
+  rest-client:
+    prometheus-ram-client:
+        url: ${PROMETHEUS_BASE_URL}
 
 app:
   prometheus:
