@@ -5,14 +5,12 @@ import com.observe.os1.v1.PrometheusRestClient;
 import com.observe.os1.v1.metrics.responseModels.CpuResourceResponse;
 import com.observe.os1.v1.metrics.responseModels.CpuResponse;
 import com.observe.os1.v1.prometheusQueries.CpuQuereis;
-import io.netty.channel.ChannelHandler;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -29,7 +27,7 @@ public class CpuResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Get Prometheus metrics pretity formatted as CPU usage in percent")
+    @Operation(summary = "Get Prometheus metrics pretty formatted as CPU usage in percent")
     @Path("/usage-in-percent")
     @APIResponse(
             responseCode = "200",
@@ -90,7 +88,7 @@ public class CpuResource {
         }
 
 
-        CpuResponse cpuResponse = new CpuResponse();
+        CpuResponse cpuResponse;
 
         try {
             String json = response.readEntity(String.class);
@@ -113,16 +111,25 @@ public class CpuResource {
         }
     }
 
-    private CpuResourceResponse addUpValues(CpuResponse cpuResponse) {
+    private CpuResourceResponse addUpValues(CpuResponse cpuResponse) throws NullPointerException {
         CpuResourceResponse cpuResourceResponse = new CpuResourceResponse();
         if (cpuResponse != null && cpuResponse.data != null && cpuResponse.data.result != null) {
             cpuResponse.data.result.forEach(result -> {
                 result.values.forEach(value -> {
+                    if (value == null) {
+                        throw new NullPointerException("value in result.values is null");
+                    }
+
                     long timeStamp = value.timestamp;
                     if (!cpuResourceResponse.metric.containsKey(timeStamp)) {
                         cpuResourceResponse.metric.put(timeStamp, value.value);
                     } else {
-                        cpuResourceResponse.metric.compute(timeStamp, (k, valueAtTimeStamp) -> valueAtTimeStamp + value.value);
+                        cpuResourceResponse.metric.compute(timeStamp, (k, valueAtTimeStamp) -> {
+                            if (valueAtTimeStamp == null) {
+                                throw new NullPointerException("valueAtTimeStamp is null for timestamp: " + timeStamp);
+                            }
+                            return valueAtTimeStamp + value.value;
+                        });
                     }
                 });
             });
