@@ -1,5 +1,6 @@
 package com.observe.os1.v1.metrics;
 
+import com.observe.os1.v1.metrics.responseModels.PingResourceResponse;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -41,35 +42,7 @@ public class PingResource {
             description = "Ping executed successfully",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    example = """
-        {
-          "address": "8.8.8.8",
-          "timestamp": "2025-07-23 09:26:35",
-          "requestedBy": "CodeMarco05",
-          "success": true,
-          "exitCode": 0,
-          "totalExecutionTimeMs": 1045,
-          "packetCount": 4,
-          "timeoutSeconds": 3,
-          "packetsSent": 4,
-          "packetsReceived": 4,
-          "packetsLost": 0,
-          "packetLossPercentage": 0.0,
-          "minLatencyMs": 14.2,
-          "maxLatencyMs": 18.7,
-          "avgLatencyMs": 16.3,
-          "stdDeviationMs": 1.8,
-          "latencies": [14.2, 16.1, 18.7, 16.2],
-          "ttl": 64,
-          "sequences": [1, 2, 3, 4],
-          "rawOutput": "Java Network Connectivity Test Results",
-          "errorOutput": "",
-          "operatingSystem": "Linux",
-          "javaVersion": "17.0.2",
-          "resolvedIpAddress": "8.8.8.8",
-          "dnsLookupTimeMs": 12.5
-        }
-        """
+                    schema = @Schema(implementation = PingResourceResponse.class)
             )
     )
     @Path("/ping-ip-address")
@@ -92,7 +65,7 @@ public class PingResource {
                     example = "3"
             ) @DefaultValue("3") int timeout
     ) {
-        PingResult result = new PingResult();
+        PingResourceResponse result = new PingResourceResponse();
         result.address = address;
         result.timestamp = LocalDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         result.requestedBy = "CodeMarco05";
@@ -132,7 +105,7 @@ public class PingResource {
         }
     }
 
-    private void performJavaNetworkTest(PingResult result, String address, int count, int timeoutSeconds) {
+    private void performJavaNetworkTest(PingResourceResponse result, String address, int count, int timeoutSeconds) {
         try {
             // DNS resolution with timing
             long dnsStart = System.nanoTime();
@@ -255,7 +228,7 @@ public class PingResource {
         return result;
     }
 
-    private void calculateStatistics(PingResult result) {
+    private void calculateStatistics(PingResourceResponse result) {
         result.packetsLost = result.packetsSent - result.packetsReceived;
 
         if (result.packetsSent > 0) {
@@ -285,84 +258,4 @@ public class PingResource {
         int estimatedTtl;
     }
 
-    @Schema(description = "Complete ping result with network statistics and system information")
-    public static class PingResult {
-        @Schema(description = "The target IP address or hostname that was pinged", example = "8.8.8.8")
-        public String address;
-
-        @Schema(description = "UTC timestamp when the ping was executed (YYYY-MM-DD HH:MM:SS format)", example = "2025-07-23 09:26:35")
-        public String timestamp;
-
-        @Schema(description = "Username of the person who requested the ping", example = "CodeMarco05")
-        public String requestedBy;
-
-        @Schema(description = "Overall success status - true if at least one packet was received", example = "true")
-        public boolean success;
-
-        @Schema(description = "Process exit code (0 = success, >0 = failure)", example = "0")
-        public int exitCode;
-
-        @Schema(description = "Error message if ping failed, null if successful")
-        public String errorMessage;
-
-        @Schema(description = "Total time taken to execute connectivity test in milliseconds", example = "1045")
-        public long totalExecutionTimeMs;
-
-        @Schema(description = "Number of connectivity tests configured to be performed", example = "4")
-        public int packetCount;
-
-        @Schema(description = "Timeout configured for each test in seconds", example = "3")
-        public int timeoutSeconds;
-
-        @Schema(description = "Number of connectivity tests performed", example = "4")
-        public int packetsSent = 0;
-
-        @Schema(description = "Number of successful connectivity tests", example = "4")
-        public int packetsReceived = 0;
-
-        @Schema(description = "Number of failed connectivity tests", example = "0")
-        public int packetsLost = 0;
-
-        @Schema(description = "Failure percentage calculated as (lost/sent)*100", example = "0.0")
-        public double packetLossPercentage = 0.0;
-
-        @Schema(description = "Minimum response time in milliseconds", example = "14.2")
-        public double minLatencyMs = 0.0;
-
-        @Schema(description = "Maximum response time in milliseconds", example = "18.7")
-        public double maxLatencyMs = 0.0;
-
-        @Schema(description = "Average response time in milliseconds", example = "16.3")
-        public double avgLatencyMs = 0.0;
-
-        @Schema(description = "Standard deviation of response times", example = "1.8")
-        public double stdDeviationMs = 0.0;
-
-        @Schema(description = "Array of individual response times in milliseconds", example = "[14.2, 16.1, 18.7, 16.2]")
-        public List<Double> latencies = new ArrayList<>();
-
-        @Schema(description = "Estimated Time To Live value", example = "64")
-        public int ttl = 0;
-
-        @Schema(description = "Sequence numbers from each connectivity test", example = "[1, 2, 3, 4]")
-        public List<Integer> sequences = new ArrayList<>();
-
-        @Schema(description = "Complete output from connectivity test")
-        public String rawOutput;
-
-        @Schema(description = "Error output if any errors occurred")
-        public String errorOutput;
-
-        @Schema(description = "Operating system where test was executed", example = "Linux")
-        public String operatingSystem = System.getProperty("os.name");
-
-        @Schema(description = "Java version used to execute the test", example = "21.0.1")
-        public String javaVersion = System.getProperty("java.version");
-
-        @Schema(description = "Resolved IP address of the target", example = "8.8.8.8")
-        public String resolvedIpAddress;
-
-        @Schema(description = "Time taken for DNS lookup in milliseconds", example = "12.5")
-        public double dnsLookupTimeMs = 0.0;
-    }
 }

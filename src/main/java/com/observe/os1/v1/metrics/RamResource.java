@@ -78,7 +78,7 @@ public class RamResource {
                     description = "Interval in seconds between data points",
                     example = "15"
             ) Integer interval
-    ){
+    ) {
         // check the parameters
         if (startTime == null || endTime == null || interval == null) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -174,7 +174,6 @@ public class RamResource {
                 interval + "s"
         );
     }
-
 
 
     @GET

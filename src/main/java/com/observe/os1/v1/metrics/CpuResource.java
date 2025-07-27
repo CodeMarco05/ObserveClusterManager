@@ -1,7 +1,11 @@
 package com.observe.os1.v1.metrics;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.observe.os1.v1.PrometheusRestClient;
+import com.observe.os1.v1.metrics.responseModels.CpuResourceResponse;
+import com.observe.os1.v1.metrics.responseModels.CpuResponse;
 import com.observe.os1.v1.prometheusQueries.CpuQuereis;
+import io.netty.channel.ChannelHandler;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -9,6 +13,7 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -24,37 +29,15 @@ public class CpuResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Get Prometheus metrics")
+    @Operation(summary = "Get Prometheus metrics pretity formatted as CPU usage in percent")
     @Path("/usage-in-percent")
     @APIResponse(
             responseCode = "200",
             description = "Prometheus query response",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    examples = @ExampleObject(
-                            name = "Prometheus Query Response",
-                            summary = "Successful response with CPU metrics",
-                            description = "Example showing matrix result type with time series data",
-                            value = """
-            {
-              "status": "success",
-              "data": {
-                "resultType": "matrix",
-                "result": [
-                  {
-                    "metric": {
-                      "instance": "host.docker.internal:9100",
-                      "mode": "user"
-                    },
-                    "values": [
-                      [1752966880, "0.018324171247710568"],
-                      [1752966882, "0.03083333333333016"]
-                    ]
-                  }
-                ]
-              }
-            }
-            """
+                    schema = @Schema(
+                            implementation = CpuResourceResponse.class
                     )
             )
     )
@@ -91,13 +74,60 @@ public class CpuResource {
                     .build();
         }
 
-        return prometheusRestClient.universalTimeQuery(
-                CpuQuereis.CPU_USAGE_PERCENTAGE.toString(),
-                startTime.toString(),
-                endTime.toString(),
-                interval + "s"
-        );
+        Response response;
+
+        try {
+            response = prometheusRestClient.universalTimeQuery(
+                    CpuQuereis.CPU_USAGE_PERCENTAGE.toString(),
+                    startTime.toString(),
+                    endTime.toString(),
+                    interval + "s"
+            );
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error querying Prometheus: " + e.getMessage())
+                    .build();
+        }
+
+
+        CpuResponse cpuResponse = new CpuResponse();
+
+        try {
+            String json = response.readEntity(String.class);
+            ObjectMapper mapper = new ObjectMapper();
+            cpuResponse = mapper.readValue(json, CpuResponse.class);
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error processing the response: " + e.getMessage())
+                    .build();
+        }
+
+        try {
+            // add all the values up and put them in one list
+            CpuResourceResponse cpuResourceResponse = addUpValues(cpuResponse);
+            return Response.ok().entity(cpuResourceResponse).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error processing CPU data: " + e.getMessage())
+                    .build();
+        }
     }
 
-
+    private CpuResourceResponse addUpValues(CpuResponse cpuResponse) {
+        CpuResourceResponse cpuResourceResponse = new CpuResourceResponse();
+        if (cpuResponse != null && cpuResponse.data != null && cpuResponse.data.result != null) {
+            cpuResponse.data.result.forEach(result -> {
+                result.values.forEach(value -> {
+                    long timeStamp = value.timestamp;
+                    if (!cpuResourceResponse.metric.containsKey(timeStamp)) {
+                        cpuResourceResponse.metric.put(timeStamp, value.value);
+                    } else {
+                        cpuResourceResponse.metric.compute(timeStamp, (k, valueAtTimeStamp) -> valueAtTimeStamp + value.value);
+                    }
+                });
+            });
+        }
+        return cpuResourceResponse;
+    }
 }
+

@@ -2,7 +2,9 @@ package com.observe.os1.v1;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
@@ -19,6 +21,7 @@ public interface PrometheusRestClient {
      * @return a Response containing the Prometheus query result
      */
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     Response universalTimeQuery(
             @QueryParam("query") String query,
             @QueryParam("start") String start,
