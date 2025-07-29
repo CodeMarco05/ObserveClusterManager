@@ -4,6 +4,7 @@ package com.observe.os1.v1.metrics;
 import com.observe.os1.AppConfig;
 import com.observe.os1.v1.PrometheusRestClient;
 import com.observe.os1.v1.prometheusQueries.RamQuery;
+import io.smallrye.common.constraint.NotNull;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -19,9 +20,6 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class RamResource {
-
-    @Inject
-    AppConfig appConfig;
 
     @Inject
     @RestClient
@@ -62,18 +60,21 @@ public class RamResource {
     )
     public Response getRamUsageInPercent(
             @QueryParam("startTime")
+            @NotNull
             @Parameter(
                     description = "Start time as Unix timestamp",
                     example = "1752966880"
             ) Long startTime,
 
             @QueryParam("endTime")
+            @NotNull
             @Parameter(
                     description = "End time as Unix timestamp",
                     example = "1752966940"
             ) Long endTime,
 
             @QueryParam("interval")
+            @NotNull
             @Parameter(
                     description = "Interval in seconds between data points",
                     example = "15"
@@ -137,18 +138,21 @@ public class RamResource {
     )
     public Response getFreeMemoryInGB(
             @QueryParam("startTime")
+            @NotNull
             @Parameter(
                     description = "Start time as Unix timestamp",
                     example = "1752966880"
             ) Long startTime,
 
             @QueryParam("endTime")
+            @NotNull
             @Parameter(
                     description = "End time as Unix timestamp",
                     example = "1752966940"
             ) Long endTime,
 
             @QueryParam("interval")
+            @NotNull
             @Parameter(
                     description = "Interval in seconds between data points",
                     example = "15"
@@ -211,18 +215,21 @@ public class RamResource {
     )
     public Response getUsedMemoryInGB(
             @QueryParam("startTime")
+            @NotNull
             @Parameter(
                     description = "Start time as Unix timestamp",
                     example = "1752966880"
             ) Long startTime,
 
             @QueryParam("endTime")
+            @NotNull
             @Parameter(
                     description = "End time as Unix timestamp",
                     example = "1752966940"
             ) Long endTime,
 
             @QueryParam("interval")
+            @NotNull
             @Parameter(
                     description = "Interval in seconds between data points",
                     example = "15"

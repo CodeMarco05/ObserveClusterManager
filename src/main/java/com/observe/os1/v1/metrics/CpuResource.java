@@ -5,6 +5,7 @@ import com.observe.os1.v1.PrometheusRestClient;
 import com.observe.os1.v1.metrics.responseModels.CpuResourceResponse;
 import com.observe.os1.v1.metrics.responseModels.CpuResponse;
 import com.observe.os1.v1.prometheusQueries.CpuQuereis;
+import io.smallrye.common.constraint.NotNull;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -41,18 +42,21 @@ public class CpuResource {
     )
     public Response getCpuUsageInPercent(
             @QueryParam("startTime")
+            @NotNull
             @Parameter(
                     description = "Start time as Unix timestamp",
                     example = "1752966880"
             ) Long startTime,
 
             @QueryParam("endTime")
+            @NotNull
             @Parameter(
                     description = "End time as Unix timestamp",
                     example = "1752966940"
             ) Long endTime,
 
             @QueryParam("interval")
+            @NotNull
             @Parameter(
                     description = "Interval in seconds between data points",
                     example = "15"

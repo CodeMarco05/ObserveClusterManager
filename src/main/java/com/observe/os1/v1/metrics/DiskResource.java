@@ -2,6 +2,7 @@ package com.observe.os1.v1.metrics;
 
 import com.observe.os1.v1.PrometheusRestClient;
 import com.observe.os1.v1.prometheusQueries.DiskQueries;
+import io.smallrye.common.constraint.NotNull;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -57,18 +58,21 @@ public class DiskResource {
     )
     public Response getFreeSpaceInGB(
             @QueryParam("startTime")
+            @NotNull
             @Parameter(
                     description = "Start time as Unix timestamp",
                     example = "1752966880"
             ) Long startTime,
 
             @QueryParam("endTime")
+            @NotNull
             @Parameter(
                     description = "End time as Unix timestamp",
                     example = "1752966880"
             ) Long endTime,
 
             @QueryParam("interval")
+            @NotNull
             @Parameter(
                     description = "Interval in seconds between data points",
                     example = "15"
@@ -129,18 +133,21 @@ public class DiskResource {
     )
     public Response getUsedSpaceInGB(
             @QueryParam("startTime")
+            @NotNull
             @Parameter(
                     description = "Start time as Unix timestamp",
                     example = "1752966880"
             ) Long startTime,
 
             @QueryParam("endTime")
+            @NotNull
             @Parameter(
                     description = "End time as Unix timestamp",
                     example = "1752966880"
             ) Long endTime,
 
             @QueryParam("interval")
+            @NotNull
             @Parameter(
                     description = "Interval in seconds between data points",
                     example = "5"
@@ -201,18 +208,21 @@ public class DiskResource {
     )
     public Response getTotalDiskSizeInGB(
             @QueryParam("startTime")
+            @NotNull
             @Parameter(
                     description = "Start time as Unix timestamp",
                     example = "1752966880"
             ) Long startTime,
 
             @QueryParam("endTime")
+            @NotNull
             @Parameter(
                     description = "End time as Unix timestamp",
                     example = "1752966980"
             ) Long endTime,
 
             @QueryParam("interval")
+            @NotNull
             @Parameter(
                     description = "Interval in seconds between data points",
                     example = "5"
@@ -273,18 +283,21 @@ public class DiskResource {
     )
     public Response getTotalDiskSizeInGBOverAllVolumes(
             @QueryParam("startTime")
+            @NotNull
             @Parameter(
                     description = "Start time as Unix timestamp",
                     example = "1752966880"
             ) Long startTime,
 
             @QueryParam("endTime")
+            @NotNull
             @Parameter(
                     description = "End time as Unix timestamp",
                     example = "1752966980"
             ) Long endTime,
 
             @QueryParam("interval")
+            @NotNull
             @Parameter(
                     description = "Interval in seconds between data points",
                     example = "5"
