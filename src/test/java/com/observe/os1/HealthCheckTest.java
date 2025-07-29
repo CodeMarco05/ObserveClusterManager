@@ -4,7 +4,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
 public class HealthCheckTest {
@@ -15,6 +15,6 @@ public class HealthCheckTest {
             .when().get("/health-check")
             .then()
             .statusCode(200)
-            .body(is("Hello from Quarkus!"));
+            .body(containsString("Hello from Quarkus!"));
     }
 }

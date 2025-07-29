@@ -62,24 +62,21 @@ public class Uptime {
     public Response getRamUsageInPercent(
             @QueryParam("startTime")
             @Parameter(
-                    description = "Start time as Unix timestamp. Not mandatory, defaults to 1 second ago if not provided.",
-                    example = "1752966880"
+                    description = "Start time as Unix timestamp. Not mandatory, defaults to 10 second ago if not provided."
             ) Long startTime,
 
             @QueryParam("endTime")
             @Parameter(
-                    description = "End time as Unix timestamp. Not mandatory, defaults to current time if not provided.",
-                    example = "1752966940"
+                    description = "End time as Unix timestamp. Not mandatory, defaults to current time if not provided."
             ) Long endTime,
 
             @QueryParam("interval")
             @Parameter(
-                    description = "Interval in seconds between data points. Also not mandatory, defaults to 15 seconds if not provided and gives one value.",
-                    example = "15"
+                    description = "Interval in seconds between data points. Also not mandatory, defaults to 15 seconds if not provided and gives one value."
             ) Long interval
     ) {
         if (startTime == null) {
-            startTime = Instant.now().getEpochSecond() - 1; // default to 1 sec ago
+            startTime = Instant.now().getEpochSecond() - 10; // default to 1 sec ago
         }
         if (endTime == null) {
             endTime = Instant.now().getEpochSecond();

@@ -1,7 +1,6 @@
 package com.observe.os1.v1.metrics;
 
 
-import com.observe.os1.AppConfig;
 import com.observe.os1.v1.PrometheusRestClient;
 import com.observe.os1.v1.prometheusQueries.RamQuery;
 import io.smallrye.common.constraint.NotNull;
@@ -15,6 +14,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+
+import java.time.Instant;
 
 @Path("/v1/metrics/ram")
 @Produces(MediaType.APPLICATION_JSON)
@@ -250,6 +251,76 @@ public class RamResource {
 
         return prometheusRestClient.universalTimeQuery(
                 RamQuery.MEMORY_USAGE_GB.toString(),
+                startTime.toString(),
+                endTime.toString(),
+                interval + "s"
+        );
+    }
+
+    @GET
+    @Path("/total-memory-in-gb")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Get total memory from node in GB")
+    @APIResponse(
+            responseCode = "200",
+            description = "Prometheus query response for total memory in GB",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(
+                            description = "Response containing total memory in GB",
+                            example = """
+                                    {
+                                      "status": "success",
+                                      "data": {
+                                        "resultType": "matrix",
+                                        "result": [
+                                          {
+                                            "metric": {
+                                              "instance": "host.docker.internal:9100",
+                                              "job": "node-exporter"
+                                            },
+                                            "values": [
+                                              [
+                                                1753806470,
+                                                "15.093620300292969"
+                                              ]
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    }
+                                    """
+                    )
+            )
+    )
+    public Response getTotalMemoryFromNodeInGB(
+            @QueryParam("startTime")
+            @Parameter(
+                    description = "Start time as Unix timestamp. Not mandatory, defaults to 10 second ago if not provided."
+            ) Long startTime,
+
+            @QueryParam("endTime")
+            @Parameter(
+                    description = "End time as Unix timestamp. Not mandatory, defaults to current time if not provided."
+            ) Long endTime,
+
+            @QueryParam("interval")
+            @Parameter(
+                    description = "Interval in seconds between data points. Also not mandatory, defaults to 15 seconds if not provided and gives one value."
+            ) Integer interval
+    ) {
+        if (startTime == null) {
+            startTime = Instant.now().getEpochSecond() - 10; // default to 1 sec ago
+        }
+        if (endTime == null) {
+            endTime = Instant.now().getEpochSecond();
+        }
+        if (interval == null) {
+            interval = 15;
+        }
+
+        return prometheusRestClient.universalTimeQuery(
+                RamQuery.MEMORY_TOTAL_GB.toString(),
                 startTime.toString(),
                 endTime.toString(),
                 interval + "s"
