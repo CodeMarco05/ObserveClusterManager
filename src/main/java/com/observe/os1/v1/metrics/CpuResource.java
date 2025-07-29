@@ -2,6 +2,7 @@ package com.observe.os1.v1.metrics;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.observe.os1.v1.PrometheusRestClient;
+import com.observe.os1.v1.metrics.responseModels.CpuResourceRawResponse;
 import com.observe.os1.v1.metrics.responseModels.CpuResourceResponse;
 import com.observe.os1.v1.metrics.responseModels.CpuResponse;
 import com.observe.os1.v1.prometheusQueries.CpuQuereis;
@@ -111,6 +112,67 @@ public class CpuResource {
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Error processing CPU data: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Get Prometheus metrics as raw format for CPU usage in percent")
+    @Path("/usage-in-percent-raw")
+    @APIResponse(
+            responseCode = "200",
+            description = "Prometheus query response",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(
+                            implementation = CpuResourceRawResponse.class
+                    )
+            )
+    )
+    public Response getCpuUsageInPercentRaw(
+            @QueryParam("startTime")
+            @Parameter(
+                    description = "Start time as Unix timestamp",
+                    example = "1752966880"
+            ) Long startTime,
+
+            @QueryParam("endTime")
+            @Parameter(
+                    description = "End time as Unix timestamp",
+                    example = "1752966940"
+            ) Long endTime,
+
+            @QueryParam("interval")
+            @Parameter(
+                    description = "Interval in seconds between data points",
+                    example = "15"
+            ) Long interval
+
+    ) {
+        // check the parameters
+        if (startTime == null || endTime == null || interval == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Missing required query parameters: startTime, endTime, interval")
+                    .build();
+        }
+        // Validate the time range
+        if (startTime >= endTime) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("startTime must be less than endTime")
+                    .build();
+        }
+
+        try {
+            return prometheusRestClient.universalTimeQuery(
+                    CpuQuereis.CPU_USAGE_PERCENTAGE.toString(),
+                    startTime.toString(),
+                    endTime.toString(),
+                    interval + "s"
+            );
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error querying Prometheus: " + e.getMessage())
                     .build();
         }
     }

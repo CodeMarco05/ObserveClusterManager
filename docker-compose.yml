@@ -9,7 +9,7 @@ services:
       - "5432:5432"
     volumes:
       # Init scripts
-      - ./db-init-scripts/init.dev.sql:/docker-entrypoint-initdb.d/init.dev.sql:ro
+      - ./db-init-scripts/int.sql:/docker-entrypoint-initdb.d/init.sql:ro
       # Persistent data
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -38,7 +38,7 @@ services:
 
   quarkus:
     container_name: quarkus-app
-    image: quarkus/observe-jvm
+    image: marco1205/observe-jvm
     depends_on:
       - postgres
     ports:
@@ -48,12 +48,7 @@ services:
       QUARKUS_DATASOURCE_USERNAME: observer
       QUARKUS_DATASOURCE_PASSWORD: theOverlookingEagle
 
-      APP_PROMETHEUS_BASE_URL: http://prometheus:9090
-      # Optional: if you use custom config loading via env var
-      # MYCONFIG_PATH: file:/deployments/config/system-config.yaml
-    # Optional: mount your system-config.yaml file (uncomment if needed)
-    # volumes:
-    #   - ./config/system-config.yaml:/deployments/config/system-config.yaml:ro
+      PROMETHEUS_BASE_URL: http://prometheus:9090
     cap_add:
       - NET_RAW
       - NET_ADMIN
