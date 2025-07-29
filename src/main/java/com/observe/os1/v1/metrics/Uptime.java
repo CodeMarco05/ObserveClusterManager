@@ -1,7 +1,6 @@
 package com.observe.os1.v1.metrics;
 
 import com.observe.os1.v1.PrometheusRestClient;
-import com.observe.os1.v1.prometheusQueries.RamQuery;
 import com.observe.os1.v1.prometheusQueries.UptimeQueries;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -63,19 +62,19 @@ public class Uptime {
     public Response getRamUsageInPercent(
             @QueryParam("startTime")
             @Parameter(
-                    description = "Start time as Unix timestamp",
+                    description = "Start time as Unix timestamp. Not mandatory, defaults to 1 second ago if not provided.",
                     example = "1752966880"
             ) Long startTime,
 
             @QueryParam("endTime")
             @Parameter(
-                    description = "End time as Unix timestamp",
+                    description = "End time as Unix timestamp. Not mandatory, defaults to current time if not provided.",
                     example = "1752966940"
             ) Long endTime,
 
             @QueryParam("interval")
             @Parameter(
-                    description = "Interval in seconds between data points",
+                    description = "Interval in seconds between data points. Also not mandatory, defaults to 15 seconds if not provided and gives one value.",
                     example = "15"
             ) Long interval
     ) {

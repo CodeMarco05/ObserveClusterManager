@@ -28,14 +28,14 @@ public class NetworkResource {
     @GET
     @Path("/in")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Get traffic in bytes per second")
+    @Operation(summary = "Get traffic in in bytes per second")
     @APIResponse(
             responseCode = "200",
-            description = "Prometheus query response for network traffic in bytes per second",
+            description = "Prometheus query response for network traffic in in bytes per second",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(
-                            description = "Response containing network traffic in bytes per second",
+                            description = "Response containing network traffic in in bytes per second",
                             example = """
                                     {
                                         "status": "success",
@@ -128,14 +128,14 @@ public class NetworkResource {
     @GET
     @Path("/out")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Get traffic out bytes per second")
+    @Operation(summary = "Get traffic out in bytes per second")
     @APIResponse(
             responseCode = "200",
-            description = "Prometheus query response for network traffic out bytes per second",
+            description = "Prometheus query response for network traffic out in bytes per second",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(
-                            description = "Response containing network traffic out bytes per second",
+                            description = "Response containing network traffic out in bytes per second",
                             example = """
                                     {
                                       "status": "success",
