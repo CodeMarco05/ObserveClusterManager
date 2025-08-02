@@ -2,7 +2,7 @@ CREATE DATABASE observe_db;
 
 CREATE USER observer WITH ENCRYPTED PASSWORD 'theOverlookingEagle';
 
-connect observe_db
+\c observe_db
 GRANT CONNECT ON DATABASE observe_db TO observer;
 
 GRANT USAGE, CREATE ON SCHEMA public TO observer;

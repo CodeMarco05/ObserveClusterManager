@@ -1,4 +1,4 @@
-package com.observe.os1.v1.metrics.responseModels;
+package com.observe.os1.v1.metrics.responseSchemas;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 

@@ -2,8 +2,8 @@ package com.observe.os1.v1.metrics;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.observe.os1.v1.PrometheusRestClient;
-import com.observe.os1.v1.metrics.responseModels.CpuResourceRawResponse;
-import com.observe.os1.v1.metrics.responseModels.CpuResourceResponse;
+import com.observe.os1.v1.metrics.responseSchemas.CpuResourceRawResponse;
+import com.observe.os1.v1.metrics.responseSchemas.CpuResourceResponse;
 import com.observe.os1.v1.metrics.responseModels.CpuResponse;
 import com.observe.os1.v1.prometheusQueries.CpuQuereis;
 import jakarta.inject.Inject;

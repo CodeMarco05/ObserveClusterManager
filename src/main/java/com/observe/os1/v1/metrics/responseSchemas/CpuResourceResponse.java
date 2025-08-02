@@ -1,9 +1,8 @@
-package com.observe.os1.v1.metrics.responseModels;
+package com.observe.os1.v1.metrics.responseSchemas;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Schema(description = "Response model for CPU resource metrics")
