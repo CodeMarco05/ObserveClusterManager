@@ -59,7 +59,7 @@ public class Uptime {
                     )
             )
     )
-    public Response getRamUsageInPercent(
+    public Response getUptimeInHours(
             @QueryParam("startTime")
             @Parameter(
                     description = "Start time as Unix timestamp. Not mandatory, defaults to 10 second ago if not provided."
@@ -87,6 +87,73 @@ public class Uptime {
 
         return prometheusRestClient.universalTimeQuery(
                 UptimeQueries.TOTAL_UPTIME_IN_HOURS.toString(),
+                startTime.toString(),
+                endTime.toString(),
+                interval + "s"
+        );
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Get the current uptime of the system in seconds")
+    @Path("/in-seconds")
+    @APIResponse(
+            responseCode = "200",
+            description = "Prometheus query response for system uptime in seconds",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(
+                            description = "Response containing system uptime in seconds",
+                            example = """
+                                    {
+                                      "status": "success",
+                                      "data": {
+                                        "resultType": "matrix",
+                                        "result": [
+                                          {
+                                            "metric": {
+                                              "instance": "host.docker.internal:9100"
+                                            },
+                                            "values": [
+                                              [1752966880, "500"],
+                                              [1752966882, "502"]
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    }
+                                    """
+                    )
+            )
+    )
+    public Response getUptimeInSeconds(
+            @QueryParam("startTime")
+            @Parameter(
+                    description = "Start time as Unix timestamp. Not mandatory, defaults to 10 second ago if not provided."
+            ) Long startTime,
+
+            @QueryParam("endTime")
+            @Parameter(
+                    description = "End time as Unix timestamp. Not mandatory, defaults to current time if not provided."
+            ) Long endTime,
+
+            @QueryParam("interval")
+            @Parameter(
+                    description = "Interval in seconds between data points. Also not mandatory, defaults to 15 seconds if not provided and gives one value."
+            ) Long interval
+    ) {
+        if (startTime == null) {
+            startTime = Instant.now().getEpochSecond() - 10; // default to 1 sec ago
+        }
+        if (endTime == null) {
+            endTime = Instant.now().getEpochSecond();
+        }
+        if (interval == null) {
+            interval = 15L;
+        }
+
+        return prometheusRestClient.universalTimeQuery(
+                UptimeQueries.TOTAL_UPTIME_IN_SECONDS.toString(),
                 startTime.toString(),
                 endTime.toString(),
                 interval + "s"
