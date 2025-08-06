@@ -1,71 +1,117 @@
-# observe
+# ObServe Backend 🔍
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+[![Java](https://img.shields.io/badge/Java-17+-red.svg)](https://www.oracle.com/java/)
+[![Quarkus](https://img.shields.io/badge/Quarkus-3.x-blue.svg)](https://quarkus.io/)
+[![Gradle](https://img.shields.io/badge/Gradle-8.x-green.svg)](https://gradle.org/)
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+> **ObServe** - Monitor, analyze, and observe your server infrastructure with ease.
 
-## Running the application in dev mode
+## 🚀 Overview
 
-You can run your application in dev mode that enables live coding using:
+ObServe Backend is a powerful server monitoring solution built with Quarkus, designed to provide real-time insights into your system's performance. Track CPU usage, memory consumption, disk space, and more with our comprehensive monitoring platform.
 
-```shell script
-./gradlew quarkusDev
+This backend seamlessly connects with the **ObServe iOS app** for mobile monitoring on-the-go. Additionally, developers can implement their own custom frontends using our well-documented API endpoints, making ObServe adaptable to any monitoring interface you envision.
+
+## ✨ Features
+
+- 📊 **Real-time Metrics**: Live monitoring of system resources
+- 💾 **Resource Tracking**: CPU, RAM, and disk usage monitoring
+- 🔧 **Health Checks**: Built-in health monitoring endpoints
+- 📈 **Prometheus Integration**: Native metrics export for monitoring
+- 🐳 **Docker Support**: Containerized deployment ready
+- ⚡ **High Performance**: Built on Quarkus for lightning-fast startup
+
+## 🛠️ Tech Stack
+
+- **Framework**: Quarkus (Supersonic Subatomic Java)
+- **Build Tool**: Gradle
+- **Monitoring**: Prometheus
+- **Database**: PostgreSQL
+- **Containerization**: Docker & Docker Compose
+
+## 📦 Installation
+
+### Prerequisites
+
+- **Server with node-exporter**: A target server with Prometheus node-exporter installed is required for system metrics collection
+- **Ansible (Optional)**: For automated node-exporter installation on Linux systems
+- **Docker & Docker Compose**: For running the ObServe backend and related services
+
+### Step 1: Install node-exporter on Target Server
+
+For Linux systems, you can use the provided Ansible playbook:
+
+```bash
+# Navigate to the playbooks directory
+cd playbooks/
+
+# Run the node-exporter installation playbook
+ansible-playbook -i inventory.ini node_exporter_playbook.yml
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+Alternatively, install node-exporter manually on your target server following the [official documentation](https://prometheus.io/docs/guides/node-exporter/).
 
-## Packaging and running the application
+### Step 2: Configure and Run Services
 
-The application can be packaged using:
+1. **Configure ports**: If node-exporter is not running on the default port (9100), update the configuration in `docker-compose.yml` to match your node-exporter port.
 
-```shell script
-./gradlew build
+2. **Start all services** using Docker Compose:
+
+```bash
+# For production
+docker-compose up -d
 ```
 
-It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
+The Docker Compose setup will start all necessary services including the ObServe backend, database, and monitoring components.
 
-The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
+## 📚 Documentation
 
-If you want to build an _über-jar_, execute the following command:
+### API Documentation
 
-```shell script
-./gradlew build -Dquarkus.package.jar.type=uber-jar
-```
+The ObServe Backend API is fully documented and available in two formats:
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar build/*-runner.jar`.
+- **OpenAPI Specification**: Available as an OpenAPI file in the `docs/` folder
+- **Interactive Swagger UI**: *(Coming Soon)* Live documentation will be available at [swagger-observe.marco-brandt.com](https://swagger-observe.marco-brandt.com)
 
-## Creating a native executable
+The Swagger interface will allow you to explore all available endpoints, test API calls directly, and understand request/response formats for building your own frontend applications.
 
-You can create a native executable using:
+## 🔧 Configuration
 
-```shell script
-./gradlew build -Dquarkus.native.enabled=true
-```
+### Environment Variables
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+The application is configured through environment variables defined in the `docker-compose.yml` file:
 
-```shell script
-./gradlew build -Dquarkus.native.enabled=true -Dquarkus.native.container-build=true
-```
+#### Database Configuration
+- `QUARKUS_DATASOURCE_JDBC_URL`: PostgreSQL connection URL (default: `jdbc:postgresql://postgres:5432/observe_db`)
+- `QUARKUS_DATASOURCE_USERNAME`: Database username (default: `observer`)
+- `QUARKUS_DATASOURCE_PASSWORD`: Database password (default: `theOverlookingEagle`)
 
-You can then execute your native executable with: `./build/observe-1.0-SNAPSHOT-runner`
+#### Monitoring Configuration
+- `PROMETHEUS_BASE_URL`: Prometheus server URL for metrics collection (default: `http://prometheus:9090`)
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/gradle-tooling>.
+### Custom PostgreSQL Database
 
-## Related Guides
+While the Docker Compose setup includes a PostgreSQL container, you can configure ObServe to use your own external PostgreSQL database by modifying the database environment variables.
 
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes
-  with Swagger UI
-- YAML Configuration ([guide](https://quarkus.io/guides/config-yaml)): Use YAML to configure your Quarkus application
-- Logging JSON ([guide](https://quarkus.io/guides/logging#json-logging)): Add JSON formatter for console logging
+⚠️ **Important**: When using a custom database setup, handle networking configuration with care. Docker networking can break if not properly configured, especially when mixing containerized and external services. Ensure proper network connectivity and firewall rules are in place.
 
-## Provided Code
+## 🤝 Contributing
 
-### YAML Config
+We welcome contributions! While you can directly submit a Pull Request, it's preferred to get in touch first to discuss your ideas:
 
-Configure your application with YAML
+- **Email**: [brandt.marco05@gmail.com](mailto:brandt.marco05@gmail.com)
+- **GitHub**: Contact methods available on my GitHub profile
 
-[Related guide section...](https://quarkus.io/guides/config-reference#configuration-examples)
+This helps ensure your contribution aligns with the project's direction and avoids duplicate work.
 
-The Quarkus application configuration is located in `src/main/resources/application.yml`.
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Support
+
+For support and questions, please open an issue in the GitHub repository.
+
+---
+
+<p align="center">Made with ❤️ by the ObServe Team</p>
