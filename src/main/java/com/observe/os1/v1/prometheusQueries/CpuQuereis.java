@@ -1,7 +1,7 @@
 package com.observe.os1.v1.prometheusQueries;
 
 public enum CpuQuereis {
-    CPU_USAGE_PERCENTAGE("avg by (instance,mode) (irate(node_cpu_seconds_total{mode!='idle'}[15s]))");
+    CPU_USAGE_PERCENTAGE("avg by (instance,mode) (irate(node_cpu_seconds_total{mode!='idle'}[1m]))");
 
     private final String query;
 
