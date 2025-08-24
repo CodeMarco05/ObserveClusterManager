@@ -1,0 +1,23 @@
+all:
+  vars:
+    ansible_python_interpreter: auto_silent
+  children:
+    backend:
+      hosts:
+        quagmire:
+          ansible_host: 100.109.12.45
+          ansible_user: observe
+        galileo:
+          ansible_host: 100.104.5.4
+          ansible_user: galileo
+    cluster:
+      hosts:
+        curiosity:
+          ansible_host: 100.66.28.38
+          ansible_user: curiosity
+        kennedy:
+          ansible_host: 100.82.14.93
+          ansible_user: kennedy
+        master:
+          ansible_host: 100.64.100.100
+          ansible_user: marco
