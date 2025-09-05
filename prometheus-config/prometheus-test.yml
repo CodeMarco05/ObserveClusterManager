@@ -1,0 +1,30 @@
+# Global configuration that applies to all jobs
+global:
+  # How frequently to scrape targets by default (can be overridden per job)
+  scrape_interval: 5s
+  
+  # How often to evaluate rules (for alerting and recording rules)
+  evaluation_interval: 10s
+
+# Files containing alerting and recording rules
+rule_files:
+# - "first_rules.yml"   # Path to alerting/recording rules file
+# - "second_rules.yml"  # Additional rules file
+
+# Configuration for scraping targets
+scrape_configs:
+  # Job for scraping Prometheus itself
+  - job_name: 'prometheus'
+    # Static list of targets to scrape
+    static_configs:
+      # Prometheus server endpoint
+      - targets: ['localhost:9090']
+
+  # Job for scraping Node Exporter metrics
+  - job_name: 'quarkus-proxy-node-exporter'
+    static_configs:
+      # Node Exporter endpoint (Docker host mapping)
+      - targets: ['host.docker.internal:8080']  # Use the service name, not localhost
+    metrics_path: '/v1/proxied-node-exporter'  # Quarkus metrics endpoint
+    params:
+      node_name: ['test-node']  # Example parameter to identify the node

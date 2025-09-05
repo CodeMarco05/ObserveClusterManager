@@ -14,11 +14,11 @@ public class ClientModel extends PanacheEntity {
     @Column(nullable = false, unique = true)
     public String name;
 
-   @Column(nullable = false)
+    @Column(nullable = false)
     public String passwordHash;
-   
+
     public String roles; // e.g. "admin,user" or "user,admin" or "admin" etc.
-    
+
     public static ClientModel findByName(String name) {
         return find("name", name).firstResult();
     }

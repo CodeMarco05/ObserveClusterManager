@@ -1,0 +1,7 @@
+all:
+  vars:
+    ansible_python_interpreter: auto_silent
+  hosts:
+    ansible:
+      ansible_host: 100.69.175.1
+      ansible_user: ansible
