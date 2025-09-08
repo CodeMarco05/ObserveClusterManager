@@ -1,11 +1,12 @@
 package com.observe.os1.models;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import jakarta.transaction.Transactional;
 
+@ApplicationScoped
 @Entity
 @Table(name = "cluster_clients")
 public class ClusterClient extends PanacheEntity {
@@ -34,5 +35,14 @@ public class ClusterClient extends PanacheEntity {
 
     public void createClient() {
         persist(this);
+    }
+
+    public String getUriByName(String nodeName) {
+        ClusterClient client = find("name", nodeName).firstResult();
+        if (client != null) {
+            String url = "http://" + client.hostOrIp + ":" + client.port;
+            return url;
+        }
+        return null;
     }
 }

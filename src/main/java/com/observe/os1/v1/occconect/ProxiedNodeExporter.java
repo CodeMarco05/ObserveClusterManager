@@ -1,7 +1,9 @@
 package com.observe.os1.v1.occconect;
 
+import com.observe.os1.models.ClusterClient;
 import io.quarkus.logging.Log;
 import io.smallrye.common.constraint.NotNull;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 
@@ -13,6 +15,9 @@ import java.net.http.HttpResponse;
 @Path("v1/proxied-node-exporter")
 public class ProxiedNodeExporter {
 
+    @Inject
+    ClusterClient clusterClient;
+
     @GET
     @Produces("text/plain; version=0.0.4; charset=utf-8")
     public Response getProxiedNode(
@@ -21,6 +26,11 @@ public class ProxiedNodeExporter {
             String nodeName
     ) {
         Log.info("Requested proxied node exporter metrics for node: " + nodeName);
+
+        // load the url from the database
+        String uri = clusterClient.getUriByName(nodeName);
+
+
         String url = "http://100.69.175.1:9100/metrics"; // TODO dynamic url
 
         HttpRequest request = HttpRequest.newBuilder(URI.create(url))
