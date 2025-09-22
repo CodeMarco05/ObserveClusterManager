@@ -6,6 +6,9 @@ quarkus:
       strategy: drop-and-create
     log:
       sql: true
+  http:
+    access-log:
+      enabled: false
 
   datasource:
     db-kind: postgresql
@@ -20,3 +23,8 @@ quarkus:
   rest-client:
     prometheus-metrics-client:
       url: ${PROMETHEUS_BASE_URL}
+
+my:
+  occ:
+    connect-file-path: ./connect-file/observe-connect-token
+    token-length: 256

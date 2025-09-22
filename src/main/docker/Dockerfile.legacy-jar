@@ -3,7 +3,7 @@
 #
 # Before building the container image run:
 #
-# ./gradlew build -Dquarkus.package.jar.type=legacy-jar
+# ./mvnw package -Dquarkus.package.jar.type=legacy-jar
 #
 # Then, build the image with:
 #
@@ -83,8 +83,8 @@ FROM registry.access.redhat.com/ubi9/openjdk-21:1.23
 ENV LANGUAGE='en_US:en'
 
 
-COPY build/lib/* /deployments/lib/
-COPY build/*-runner.jar /deployments/quarkus-run.jar
+COPY target/lib/* /deployments/lib/
+COPY target/*-runner.jar /deployments/quarkus-run.jar
 
 EXPOSE 8080
 USER 185
