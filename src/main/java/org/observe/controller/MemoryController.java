@@ -2,7 +2,6 @@ package org.observe.controller;
 
 import com.observe.openapi.api.MemoryApi;
 import com.observe.openapi.model.Memory;
-import com.observe.openapi.model.TotalMemoryInGbOk;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.observe.service.MemoryService;
