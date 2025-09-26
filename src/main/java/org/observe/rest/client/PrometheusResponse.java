@@ -1,50 +1,57 @@
 package org.observe.rest.client;
 
-import java.time.Instant;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.GET;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-// Main response wrapper
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString
 public class PrometheusResponse {
-    public String status;
-    public Data data;
-    
+    @JsonProperty("status")
+    private String status;
+
+    @JsonProperty("data")
+    private Data data;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
     public static class Data {
-        public String resultType;
-        public List<MetricResult> result;
+        @JsonProperty("resultType")
+        private String resultType;
+
+        @JsonProperty("result")
+        private List<Result> result;
     }
-    
-    public static class MetricResult {
-        public Map<String, String> metric;
-        public List<List<Object>> values; // [timestamp, value] pairs
-        
-        // Helper methods to work with values more easily
-        public List<MetricValue> getMetricValues() {
-            return values.stream()
-                    .map(valueArray -> new MetricValue(
-                        Long.parseLong(valueArray.get(0).toString()),
-                        valueArray.get(1).toString()
-                    ))
-                    .collect(Collectors.toList());
-        }
+
+    // Inner Result class
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class Result {
+        @JsonProperty("metric")
+        private Map<String, String> metric;
+
+        @JsonProperty("values")
+        private List<List<String>> values;
     }
-    
-    public static class MetricValue {
-        public final long timestamp;
-        public final String value;
-        
-        public MetricValue(long timestamp, String value) {
-            this.timestamp = timestamp;
-            this.value = value;
+
+    public int getFirstTimestamp() {
+        if (data != null && data.getResult() != null && !data.getResult().isEmpty()) {
+            List<List<String>> values = data.getResult().getFirst().getValues();
+            if (values != null && !values.isEmpty()) {
+                return Integer.parseInt(values.getFirst().getFirst());
+            }
         }
-        
-        public double getValueAsDouble() {
-            return Double.parseDouble(value);
-        }
-        
-        public Instant getTimestampAsInstant() {
-            return Instant.ofEpochSecond(timestamp);
-        }
+        return 0; // or throw an exception if preferred
     }
 }

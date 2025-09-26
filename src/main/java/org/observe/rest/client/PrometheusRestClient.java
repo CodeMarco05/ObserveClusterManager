@@ -10,11 +10,11 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @RegisterRestClient(configKey = "prometheus")
 @Path("/api/v1/query_range")
-public interface CpuClient {
+public interface PrometheusRestClient {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    PrometheusResponse getCpuUsage(
+    Response getCpuUsage(
             @QueryParam("query") String query,
             @QueryParam("start") String start,
             @QueryParam("end") String end,

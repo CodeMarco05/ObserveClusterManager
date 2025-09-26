@@ -1,9 +1,12 @@
 package org.observe.controller;
 
 import com.observe.openapi.model.CpuUsage;
+import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -16,7 +19,20 @@ class CpuControllerTest {
     @Test
     void testGivesBackInfoAboutTheCurrentCpuUsage() {
         // When
-        CpuUsage actualCpuUsage = cpuController.givesBackInfoAboutTheCurrentCpuUsage();
+        CpuUsage actualCpuUsage = cpuController.currentUsage();
+
+        Log.info(actualCpuUsage);
+
+        // Then
+        assertNotNull(actualCpuUsage);
+    }
+
+    @Test
+    void testGivesBackATimeSeriesOfCpuUsage() {
+        // When
+        List<CpuUsage> actualCpuUsage = cpuController.usageOverTime(1758912218, 1758912799, 10);
+
+        Log.info(actualCpuUsage);
 
         // Then
         assertNotNull(actualCpuUsage);
