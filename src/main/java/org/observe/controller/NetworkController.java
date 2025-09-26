@@ -2,13 +2,16 @@ package org.observe.controller;
 
 import com.observe.openapi.api.NetworkApi;
 import com.observe.openapi.model.Network;
+import io.swagger.annotations.Api;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.observe.auth.ApiKeySecured;
 import org.observe.service.NetworkService;
 
 import java.util.List;
 
 @ApplicationScoped
+@ApiKeySecured
 public class NetworkController implements NetworkApi {
 
     @Inject
