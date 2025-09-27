@@ -30,8 +30,7 @@ public class HealthService {
         healthResponse.setVersion(appVersion);
 
 
-
-        try{
+        try {
             // look for a prometheus connection
             Response response = restClient.universalQuery(
                     Queries.UP_QUERY.getQuery(),
@@ -68,7 +67,6 @@ public class HealthService {
         } catch (Exception e) {
             throw new WebApplicationException("Error connecting to Prometheus", e, Response.Status.INTERNAL_SERVER_ERROR);
         }
-
 
 
         return healthResponse;

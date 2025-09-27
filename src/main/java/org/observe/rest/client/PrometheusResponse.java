@@ -1,8 +1,6 @@
 package org.observe.rest.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.ws.rs.GET;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
