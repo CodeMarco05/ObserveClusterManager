@@ -6,6 +6,16 @@ on:
   pull_request:
     branches: [ "**" ]
   workflow_dispatch:
+    inputs:
+      test_profile:
+        description: 'Test profile to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - unit
+        - integration
 
 jobs:
   test-application:
@@ -21,19 +31,22 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Start PostgreSQL with Docker Compose
-        run: |
-          docker compose -f docker-compose.dev.yml up -d postgres
-
-          # Wait for PostgreSQL to be ready
-          echo "Waiting for PostgreSQL to initialize..."
-          sleep 15
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
       - name: Run Quarkus tests
-        run: ./gradlew clean build
+        run: |
+          if [ "${{ github.event.inputs.test_profile }}" = "unit" ]; then
+            mvn clean test -Dtest='!**/*Integration*'
+          elif [ "${{ github.event.inputs.test_profile }}" = "integration" ]; then
+            mvn clean test -Dtest='**/*Integration*'
+          else
+            mvn clean test
+          fi
 
       - name: Cleanup
         if: always()
