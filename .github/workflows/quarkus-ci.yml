@@ -31,6 +31,9 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Make maven wrapper executable
+        run: chmod +x ./mvnw
+
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
@@ -41,11 +44,11 @@ jobs:
       - name: Run Quarkus tests
         run: |
           if [ "${{ github.event.inputs.test_profile }}" = "unit" ]; then
-            mvn clean test -Dtest='!**/*Integration*'
+            ./mvnw clean test -Dtest='!**/*Integration*'
           elif [ "${{ github.event.inputs.test_profile }}" = "integration" ]; then
-            mvn clean test -Dtest='**/*Integration*'
+            ./mvnw clean test -Dtest='**/*Integration*'
           else
-            mvn clean test
+            ./mvnw clean test
           fi
 
       - name: Cleanup
