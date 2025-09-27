@@ -12,7 +12,6 @@ import org.observe.rest.client.Queries;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @ApplicationScoped
 public class MemoryService {
@@ -22,7 +21,7 @@ public class MemoryService {
     PrometheusRestClient prometheusRestClient;
 
     public List<Memory> getMemoryUsageInGb(Integer startTime, Integer endTime, Integer step) {
-        Response json = prometheusRestClient.getCpuUsage(
+        Response json = prometheusRestClient.universalQuery(
                 Queries.RAM_USAGE_IN_GB.getQuery(),
                 startTime.toString(),
                 endTime.toString(),
@@ -38,7 +37,7 @@ public class MemoryService {
     }
 
     public List<Memory> getTotalMemoryInGb(Integer startTime, Integer endTime, Integer step) {
-        Response json = prometheusRestClient.getCpuUsage(
+        Response json = prometheusRestClient.universalQuery(
                 Queries.TOTAL_RAM_IN_GB.getQuery(),
                 startTime.toString(),
                 endTime.toString(),

@@ -16,7 +16,7 @@ public class GeneralService {
     PrometheusRestClient prometheusRestClient;
 
     public Integer getUptimeInSeconds() {
-        Response json = prometheusRestClient.getCpuUsage(
+        Response json = prometheusRestClient.universalQuery(
                 Queries.UPTIME_IN_SECONDS.getQuery(),
                 System.currentTimeMillis() / 1000 + "",
                 System.currentTimeMillis() / 1000 + "",

@@ -14,7 +14,7 @@ public interface PrometheusRestClient {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    Response getCpuUsage(
+    Response universalQuery(
             @QueryParam("query") String query,
             @QueryParam("start") String start,
             @QueryParam("end") String end,

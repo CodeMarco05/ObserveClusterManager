@@ -22,7 +22,7 @@ public class CpuService {
     PrometheusRestClient prometheusRestClient;
 
     public CpuUsage getCpuUsageNow() {
-        Response json = prometheusRestClient.getCpuUsage(
+        Response json = prometheusRestClient.universalQuery(
                 Queries.CPU_USAGE.getQuery(),
                 System.currentTimeMillis() / 1000 + "",
                 System.currentTimeMillis() / 1000 + "",
@@ -53,7 +53,7 @@ public class CpuService {
     }
 
     public List<CpuUsage> getCpuUsageOverTime(Integer startTime, Integer endTime, Integer step) {
-        Response json = prometheusRestClient.getCpuUsage(
+        Response json = prometheusRestClient.universalQuery(
                 Queries.CPU_USAGE.getQuery(),
                 startTime.toString(),
                 endTime.toString(),

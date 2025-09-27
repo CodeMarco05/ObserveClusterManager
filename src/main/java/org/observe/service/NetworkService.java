@@ -22,7 +22,7 @@ public class NetworkService {
     PrometheusRestClient prometheusRestClient;
 
     public List<Network> getNetworkIn(Integer startTime, Integer endTime, Integer step) {
-        Response json = prometheusRestClient.getCpuUsage(
+        Response json = prometheusRestClient.universalQuery(
                 Queries.NETWORK_IN_IN_BYTES_PER_SECOND.getQuery(),
                 startTime.toString(),
                 endTime.toString(),
@@ -46,7 +46,7 @@ public class NetworkService {
     }
 
     public List<Network> getNetworkOut(Integer startTime, Integer endTime, Integer step) {
-        Response json = prometheusRestClient.getCpuUsage(
+        Response json = prometheusRestClient.universalQuery(
                 Queries.NETWORK_OUT_IN_BYTES_PER_SECOND.getQuery(),
                 startTime.toString(),
                 endTime.toString(),
