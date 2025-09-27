@@ -18,6 +18,11 @@ public class NetworkController implements NetworkApi {
     NetworkService networkService;
 
     @Override
+    public Integer measurePingToCloudflare() {
+        return networkService.pingToCloudflare();
+    }
+
+    @Override
     public List<Network> networkIn(Integer startTime, Integer endTime, Integer step) {
         return networkService.getNetworkIn(startTime, endTime, step);
     }

@@ -82,4 +82,16 @@ public class NetworkControllerTest {
             .statusCode(401)
             .contentType(ContentType.JSON);
     }
+
+    @Test
+    void testCLoudflarePing() {
+        given()
+                .header("X-API-Key", "test-api-key")
+                .when()
+                .get("/network/ping")
+                .then()
+                .statusCode(200)
+                .log().all()
+                .contentType(ContentType.JSON);
+    }
 }
