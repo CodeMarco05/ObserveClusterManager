@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
@@ -37,4 +38,18 @@ class CpuControllerTest {
         // Then
         assertNotNull(actualCpuUsage);
     }
+
+    @Test
+    void testReturns400WhenStartTimeIsNull() {
+        given()
+                .header("X-API-KEY", "test-api-key")
+            .queryParam("endTime", 1758912799)
+            .queryParam("step", 10)
+        .when()
+            .get("/cpu/usage-in-percent-over-time")
+        .then()
+                .log().all()
+            .statusCode(400);
+    }
+
 }

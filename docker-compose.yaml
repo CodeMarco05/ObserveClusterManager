@@ -24,7 +24,7 @@ services:
     container_name: quarkus-app
     image: marco1205/ocm-jvm
     ports:
-      - "20400:8080"
+      - "20400:20400"
     environment:
       PROMETHEUS_BASE_URL: http://100.109.12.45:9090
       APP_API_KEY: "set-your-apikey-here"

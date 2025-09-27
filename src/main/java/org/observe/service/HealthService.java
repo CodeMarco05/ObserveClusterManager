@@ -1,6 +1,7 @@
 package org.observe.service;
 
 import com.observe.openapi.model.HealthResponse;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
@@ -39,6 +40,8 @@ public class HealthService {
                     "10"
             );
 
+            Log.info(response.toString());
+
             if (response.getStatus() != 200) {
                 healthResponse.setHealth("WARN");
                 healthResponse.setPrometheusConnection("NOT OK");
@@ -49,6 +52,8 @@ public class HealthService {
 
             // Convert to PrometheusResponse
             PrometheusResponse prometheusResponse = response.readEntity(PrometheusResponse.class);
+
+            Log.info(prometheusResponse.toString());
 
             // look for a node-exporter connection
             String nodeExporterStatus = "NOT OK";
