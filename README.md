@@ -1,24 +1,41 @@
-# cluster-manager
+# Observe Cluster Manager
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+This is the backend for the Observe iOS application. It is currently under development.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+This application pulls data from Prometheus with Node Exporter and exposes it to the Observe iOS application.
 
-## Running the application in dev mode
+## Build Information
+
+This project is a Java application built with Maven.
+
+### Prerequisites
+
+*   Java 21
+*   Maven
+
+### Building the application
+
+To build the application, run the following command:
+
+```bash
+./mvnw clean install
+```
+
+### Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
 
-```shell script
+```bash
 ./mvnw quarkus:dev
 ```
 
 > **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
 
-## Packaging and running the application
+### Packaging and running the application
 
 The application can be packaged using:
 
-```shell script
+```bash
 ./mvnw package
 ```
 
@@ -29,96 +46,31 @@ The application is now runnable using `java -jar target/quarkus-app/quarkus-run.
 
 If you want to build an _über-jar_, execute the following command:
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+```bash
+./mvnw package -Dquarkus.package.type=uber-jar
 ```
 
 The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
 
-## Creating a native executable
+### Building the native image
 
-You can create a native executable using:
+To build a native image, run the following command:
 
-```shell script
-./mvnw package -Dnative
+```bash
+./mvnw package -Pnative
 ```
 
 Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+```bash
+./mvnw package -Pnative -Dquarkus.native.container-build=true
 ```
 
 You can then execute your native executable with: `./target/cluster-manager-1.0.0-SNAPSHOT-runner`
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
 ## Related Guides
 
-- REST resources for Hibernate ORM with Panache ([guide](https://quarkus.io/guides/rest-data-panache)): Generate Jakarta REST resources for your Hibernate Panache entities and repositories
-- OpenAPI Generator - REST Client Generator ([guide](https://docs.quarkiverse.io/quarkus-openapi-generator/dev/index.html)): Generation of Rest Clients based on OpenAPI specification files
-- Camel MapStruct ([guide](https://camel.apache.org/camel-quarkus/latest/reference/extensions/mapstruct.html)): Type Conversion using Mapstruct
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes with Swagger UI
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
-
-## Provided Code
-
-### REST Data with Panache
-
-Generating Jakarta REST resources with Panache
-
-[Related guide section...](https://quarkus.io/guides/rest-data-panache)
-
-
-### OpenAPI Generator Client Codestart
-
-Start to code with the OpenAPI Generator Client extension.
-
-[Related guide section...](https://docs.quarkiverse.io/quarkus-openapi-generator/dev/client.html)
-
-## Requirements
-
-If you do not have added the `io.quarkus:quarkus-rest-client-jackson` or `io.quarkus:quarkus-rest-client-reactive-jackson` extension in your project, add it first:
-
-Remember, you just need to add one of them, depending on your needs.
-
-### REST Client Jackson:
-
-Quarkus CLI:
-
-```bash
-quarkus ext add io.quarkus:quarkus-rest-client-jackson
-```
-
-Maven:
-```bash
-./mvnw quarkus:add-extension -Dextensions="io.quarkus:quarkus-rest-client-jackson"
-```
-
-Gradle:
-
-```bash
-./gradlew addExtension --extensions="io.quarkus:quarkus-rest-client-jackson"
-```
-
-or
-
-### REST Client Reactive Jackson:
-
-Quarkus CLI:
-
-```bash
-quarkus ext add io.quarkus:quarkus-rest-client-reactive-jackson
-```
-
-Maven:
-
-```bash
-./mvnw quarkus:add-extension -Dextensions="io.quarkus:quarkus-rest-client-reactive-jackson"
-```
-
-Gradle:
-
-```bash
-./gradlew addExtension --extensions="io.quarkus:quarkus-rest-client-reactive-jackson"
-```
+- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes
+  with Swagger UI
+- YAML Configuration ([guide](https://quarkus.io/guides/config-yaml)): Use YAML to configure your Quarkus application
+- Logging JSON ([guide](https://quarkus.io/guides/logging#json-logging)): Add JSON formatter for console logging
