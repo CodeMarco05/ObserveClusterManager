@@ -1,7 +1,7 @@
 # Global configuration that applies to all jobs
 global:
   # How frequently to scrape targets by default (can be overridden per job)
-  scrape_interval: 60s
+  scrape_interval: 5s
   
   # How often to evaluate rules (for alerting and recording rules)
   evaluation_interval: 45s
